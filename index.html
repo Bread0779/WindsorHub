@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v3.4</title>
+    <title>Windsor Hub v3.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
@@ -61,9 +61,9 @@
         <input type="date" id="inputDate">
         <input type="text" id="inputName" placeholder="項目名稱">
         <select id="inputCat">
-            <option value="travel">旅遊類 (橘)</option>
-            <option value="invest">投資類 (藍)</option>
-            <option value="reserve">預備金 (灰)</option>
+            <option value="travel">旅遊類 (皇家藍)</option>
+            <option value="invest">投資類 (青色)</option>
+            <option value="reserve">預備金 (灰色)</option>
         </select>
         <input type="number" id="inputAmt" placeholder="金額">
         <button class="main-btn" onclick="window.saveData()">數據存儲</button>
@@ -84,12 +84,13 @@
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.4 BLACK-LINE EDITION</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.5 REFINED VISION</div>
 </div>
 
 <script>
     window.db = JSON.parse(localStorage.getItem("windsorHub_v14") || "{}");
-    const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
+    // 總裁定製顏色：旅遊類改為皇家深藍 (#0a377d)
+    const colors = { travel: "#0a377d", invest: "#00f3ff", reserve: "#888" };
     let ringSectors = { A: [], B: [] };
 
     window.refreshSelectors = function() {
@@ -154,22 +155,21 @@
             valEl.innerText = "$ " + total.toLocaleString();
             listEl.innerHTML = items.map((i, idx) => `
                 <div class="detail-item">
-                    <span>${i.name}</span><b>$ ${i.amt.toLocaleString()}</b>
+                    <span style="border-left:2px solid ${colors[i.cat]}; padding-left:5px">${i.name}</span><b>$ ${i.amt.toLocaleString()}</b>
                     <button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button>
                 </div>
             `).join('');
 
             if (total === 0) { ringEl.style.background = "#222"; return; }
             let currentDeg = 0;
-            // 黑線寬度：調粗為 2deg，讓它更明顯
-            const blackLineDeg = 2.0; 
+            // 黑線粗度：下調為 0.8deg，精細區隔
+            const blackLineDeg = 0.8; 
             const gps = items.map((i) => {
                 const pDeg = (i.amt / total) * 360;
                 const s = currentDeg;
                 const e = currentDeg + pDeg;
                 ringSectors[id].push({ start: s, end: e, name: i.name, amt: i.amt, cat: i.cat });
                 currentDeg = e;
-                // 從「Transparent 間隙」改為「#000 實心黑線」
                 return `${colors[i.cat]} ${s}deg ${e - blackLineDeg}deg, #000 ${e - blackLineDeg}deg ${e}deg`;
             });
             ringEl.style.background = `conic-gradient(${gps.join(",")})`;
