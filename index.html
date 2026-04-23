@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v3.1</title>
+    <title>Windsor Hub v3.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
@@ -16,7 +16,6 @@
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
 
-        /* 圓環容器與引線畫布 */
         .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; transition: background 0.4s; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
@@ -47,7 +46,7 @@
                 <button class="del-x" onclick="window.deleteDate('A')">✕</button>
             </div>
         </div>
-        <div class="chart-container" id="containerA">
+        <div class="chart-container">
             <div id="ringA" class="donut-ring"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center"><div class="center-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
@@ -57,7 +56,7 @@
 
     <div class="section">
         <input type="date" id="inputDate">
-        <input type="text" id="inputName" placeholder="項目名稱 (例：日本旅遊)">
+        <input type="text" id="inputName" placeholder="項目名稱">
         <select id="inputCat">
             <option value="travel">旅遊類 (橘)</option>
             <option value="invest">投資類 (藍)</option>
@@ -74,7 +73,7 @@
                 <button class="del-x" onclick="window.deleteDate('B')">✕</button>
             </div>
         </div>
-        <div class="chart-container" id="containerB">
+        <div class="chart-container">
             <div id="ringB" class="donut-ring"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center"><div class="center-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
@@ -82,13 +81,12 @@
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.1 FOCUS LEADS</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.2 FINAL STABLE</div>
 </div>
 
 <script>
-    window.db = JSON.parse(localStorage.getItem("windsorHub_v12") || "{}");
+    window.db = JSON.parse(localStorage.getItem("windsorHub_v13") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
-    // 儲存每個色塊的角度資訊，用於互動
     let ringSectors = { A: [], B: [] };
 
     window.refreshSelectors = function() {
@@ -113,17 +111,18 @@
         if (!d) { alert("請選擇日期"); return; }
         if (!window.db[d]) window.db[d] = [];
         window.db[d].push({ cat: c, name: n, amt: a });
-        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", document.getElementById("selA").value);
         window.updateRing("B", document.getElementById("selB").value);
+        alert("數據存儲成功"); // 回歸提示
     }
 
     window.removeItem = function(date, index, ringId) {
         if (!confirm("確定移除此筆項目？")) return;
         window.db[date].splice(index, 1);
         if (window.db[date].length === 0) delete window.db[date];
-        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", document.getElementById("selA").value);
         window.updateRing("B", document.getElementById("selB").value);
@@ -133,7 +132,7 @@
         const d = document.getElementById("sel" + id).value;
         if (!d || !confirm("刪除整個 " + d + " 的數據？")) return;
         delete window.db[d];
-        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", ""); window.updateRing("B", "");
     }
@@ -143,34 +142,28 @@
         const ringEl = document.getElementById("ring" + id);
         const listEl = document.getElementById("list" + id);
         const svgEl = document.getElementById("leads" + id);
-        svgEl.innerHTML = ""; // 清空引線
-        ringSectors[id] = []; // 清空角度資訊
+        svgEl.innerHTML = "";
+        ringSectors[id] = [];
         
         if (window.db[date]) {
             const items = window.db[date];
             const total = items.reduce((sum, i) => sum + i.amt, 0);
             valEl.innerText = "$ " + total.toLocaleString();
-            
             listEl.innerHTML = items.map((i, idx) => `
                 <div class="detail-item">
-                    <span>${i.name}</span>
-                    <b>$ ${i.amt.toLocaleString()}</b>
+                    <span>${i.name}</span><b>$ ${i.amt.toLocaleString()}</b>
                     <button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button>
                 </div>
             `).join('');
 
             if (total === 0) { ringEl.style.background = "#222"; return; }
-
             let currentDeg = 0;
             const gapDeg = 1.5; 
             const gps = items.map((i, idx) => {
                 const pDeg = (i.amt / total) * 360;
                 const s = currentDeg;
                 const e = currentDeg + pDeg;
-                
-                // 儲存區塊資訊供點擊使用
                 ringSectors[id].push({ start: s, end: e, name: i.name, amt: i.amt, cat: i.cat });
-
                 currentDeg = e;
                 return `${colors[i.cat]} ${s}deg ${e - gapDeg}deg, transparent ${e - gapDeg}deg ${e}deg`;
             });
@@ -182,108 +175,55 @@
         }
     }
 
-    // 處理圓環點擊/觸摸事件，拉出引線
     function handleRingClick(e, id) {
         const rect = e.target.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-        
-        // 計算點擊位置相對於圓心的角度
-        let clickX, clickY;
-        if (e.touches) {
-            clickX = e.touches[0].clientX;
-            clickY = e.touches[0].clientY;
-        } else {
-            clickX = e.clientX;
-            clickY = e.clientY;
-        }
-
-        const dx = clickX - centerX;
-        const dy = clickY - centerY;
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90; // 轉換為 conic-gradient 角度
+        let clickX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clickY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = clickX - centerX, dy = clickY - centerY;
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
         if (angle < 0) angle += 360;
-
-        // 尋找對應的區塊
         const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
-        
-        if (sector) {
-            drawLeadLine(id, sector);
-        }
+        if (sector) drawLeadLine(id, sector);
     }
 
-    // 繪製引線與標籤
     function drawLeadLine(id, sector) {
         const svgEl = document.getElementById("leads" + id);
-        svgEl.innerHTML = ""; // 先清空之前的引線
-
-        // 計算區塊中心角度
+        svgEl.innerHTML = "";
         const midDeg = sector.start + (sector.end - sector.start) / 2;
         const rad = (midDeg - 90) * (Math.PI / 180);
-        
-        // 圓環半徑約為 90 (180/2)
-        const ringR = 90;
-        const svgCenter = 130; // 260/2
-        
-        // 引線起點 (圓環邊緣)
-        const x1 = svgCenter + ringR * Math.cos(rad);
-        const y1 = svgCenter + ringR * Math.sin(rad);
-        
-        // 引線轉折點 (向外延伸)
-        const breakR = 110;
-        const x2 = svgCenter + breakR * Math.cos(rad);
-        const y2 = svgCenter + breakR * Math.sin(rad);
-        
-        // 標籤終點 (水平延伸)
-        const labelR = 120;
-        const isRight = x2 > svgCenter;
-        const x3 = isRight ? svgCenter + labelR : svgCenter - labelR;
-        const y3 = y2; // 維持高度
-
+        const ringR = 90, svgC = 130;
+        const x1 = svgC + ringR * Math.cos(rad), y1 = svgC + ringR * Math.sin(rad);
+        const x2 = svgC + 110 * Math.cos(rad), y2 = svgC + 110 * Math.sin(rad);
+        const isR = x2 > svgC, x3 = isR ? svgC + 120 : svgC - 120, y3 = y2;
         const color = colors[sector.cat];
 
-        // 建立 SVG 引線 (折線)
-        const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        polyline.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
-        polyline.setAttribute("stroke", color);
-        polyline.setAttribute("stroke-width", "1");
-        polyline.setAttribute("fill", "none");
-        polyline.setAttribute("stroke-dasharray", "2,2"); // 戰術虛線
-        svgEl.appendChild(polyline);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
+        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "2,2");
+        svgEl.appendChild(line);
 
-        // 建立標籤文字 (項目名稱)
-        const textName = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        textName.setAttribute("x", x3);
-        textName.setAttribute("y", y3 - 5); // 文字在線上
-        textName.setAttribute("fill", color);
-        textName.setAttribute("font-size", "10px");
-        textName.setAttribute("font-weight", "bold");
-        textName.setAttribute("text-anchor", isRight ? "start" : "end");
-        textName.textContent = sector.name;
-        svgEl.appendChild(textName);
+        const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t1.setAttribute("x", x3); t1.setAttribute("y", y3 - 5); t1.setAttribute("fill", color);
+        t1.setAttribute("font-size", "10px"); t1.setAttribute("font-weight", "bold");
+        t1.setAttribute("text-anchor", isR ? "start" : "end"); t1.textContent = sector.name;
+        svgEl.appendChild(t1);
 
-        // 建立標籤文字 (金額)
-        const textAmt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        textAmt.setAttribute("x", x3);
-        textAmt.setAttribute("y", y3 + 12); // 金額在線下
-        textAmt.setAttribute("fill", "#39ff14"); // 綠色金額
-        textAmt.setAttribute("font-size", "10px");
-        textAmt.setAttribute("text-anchor", isRight ? "start" : "end");
-        textAmt.textContent = `$ ${sector.amt.toLocaleString()}`;
-        svgEl.appendChild(textAmt);
+        const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t2.setAttribute("x", x3); t2.setAttribute("y", y3 + 12); t2.setAttribute("fill", "#39ff14");
+        t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR ? "start" : "end");
+        t2.textContent = `$ ${sector.amt.toLocaleString()}`;
+        svgEl.appendChild(t2);
 
-        // 3秒後自動消失，維持簡潔
-        setTimeout(() => {
-            if (svgEl.contains(polyline)) svgEl.removeChild(polyline);
-            if (svgEl.contains(textName)) svgEl.removeChild(textName);
-            if (svgEl.contains(textAmt)) svgEl.removeChild(textAmt);
-        }, 3000);
+        setTimeout(() => { svgEl.innerHTML = ""; }, 3000);
     }
 
-    // 綁定事件
-    document.getElementById("ringA").addEventListener("click", (e) => handleRingClick(e, "A"));
-    document.getElementById("ringA").addEventListener("touchstart", (e) => handleRingClick(e, "A"));
-    document.getElementById("ringB").addEventListener("click", (e) => handleRingClick(e, "B"));
-    document.getElementById("ringB").addEventListener("touchstart", (e) => handleRingClick(e, "B"));
+    ["ringA", "ringB"].forEach(rid => {
+        const el = document.getElementById(rid);
+        el.addEventListener("click", (e) => handleRingClick(e, rid.replace("ring", "")));
+        el.addEventListener("touchstart", (e) => handleRingClick(e, rid.replace("ring", "")));
+    });
 
     window.refreshSelectors();
 </script>
