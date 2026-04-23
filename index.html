@@ -3,52 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v2.5</title>
+    <title>Windsor Hub v2.6</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         h2 { color: #ff8c00; margin: 0; font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
         
-        /* 圓環區域 */
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; box-sizing: border-box; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; width: 100%; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-        .del-x:hover { color: #ff3131; }
 
-        /* 厚圓環設定 */
+        /* 極厚圓環設定：內孔縮至 40% */
         .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { 
             position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; 
-            /* 調整 48% 讓圓環變厚 */
-            -webkit-mask: radial-gradient(transparent 48%, black 49%); 
-            mask: radial-gradient(transparent 48%, black 49%); 
+            -webkit-mask: radial-gradient(transparent 40%, black 41%); 
+            mask: radial-gradient(transparent 40%, black 41%); 
             transition: background 0.5s ease; 
         }
-        .center-val { font-size: 18px; font-weight: bold; color: #39ff14; z-index: 10; }
+        .center-val { font-size: 20px; font-weight: bold; color: #39ff14; z-index: 10; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
 
-        /* 數據輸入區 - 穩定佈局 */
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
         h4 { margin: 0 0 15px 0; font-size: 14px; color: #ff8c00; border-left: 3px solid #ff8c00; padding-left: 10px; }
         label { font-size: 10px; color: #888; display: block; margin-bottom: 5px; }
         
-        /* 修正日期框不凸出的關鍵 CSS */
         input, select { 
-            width: 100%; 
-            padding: 12px; 
-            background: #262626; 
-            border: 1px solid #444; 
-            color: white; 
-            border-radius: 10px; 
-            margin-bottom: 12px; 
-            font-family: monospace; 
-            font-size: 14px; 
-            box-sizing: border-box; /* 確保 padding 不增加寬度 */
-            display: block;
-            outline: none;
-            -webkit-appearance: none; /* 移除行動端預設樣式 */
+            width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; 
+            border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; 
+            box-sizing: border-box; display: block; outline: none; -webkit-appearance: none;
         }
         
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 15px; }
@@ -64,7 +49,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:10px; color:#ff8c00">● 觀測環 A</span>
+            <span style="font-size:12px; font-weight:bold; color:#ff8c00">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="updateRing('A', this.value)">
                     <option value="">SELECT DATE</option>
@@ -96,7 +81,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:10px; color:#ff8c00">● 觀測環 B</span>
+            <span style="font-size:12px; font-weight:bold; color:#ff8c00">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="updateRing('B', this.value)">
                     <option value="">SELECT DATE</option>
@@ -112,12 +97,12 @@
 
     <div class="footer">
         © 2026 WINDSOR SHIELD ANALYTICS<br>
-        v2.5 GITHUB MASTER EDITION
+        v2.6 MINIMAL ARMOR EDITION
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem("windsorHub_v5") || "{}");
+    let db = JSON.parse(localStorage.getItem("windsorHub_v6") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
 
     function refreshSelectors() {
@@ -144,12 +129,11 @@
         if (!db[d]) db[d] = [];
         
         db[d].push({ cat: c, amt: a });
-        localStorage.setItem("windsorHub_v5", JSON.stringify(db));
+        localStorage.setItem("windsorHub_v6", JSON.stringify(db));
         
         refreshSelectors();
         updateRing("A", document.getElementById("selA").value);
         updateRing("B", document.getElementById("selB").value);
-        alert("存儲成功");
     }
 
     function deleteDate(id) {
@@ -157,7 +141,7 @@
         if (!date) return;
         if (confirm("刪除 " + date + "?")) {
             delete db[date];
-            localStorage.setItem("windsorHub_v5", JSON.stringify(db));
+            localStorage.setItem("windsorHub_v6", JSON.stringify(db));
             refreshSelectors();
             updateRing("A", "");
             updateRing("B", "");
@@ -181,7 +165,7 @@
                 const start = currentDeg;
                 const end = currentDeg + p;
                 currentDeg = end;
-                // 間隙縮小為 0.5%
+                // 維持精緻的 0.5% 間隙
                 return `${colors[item.cat]} ${start}% ${end - 0.5}%, #000 ${end - 0.5}% ${end}%`;
             });
             ringEl.style.background = `conic-gradient(${gradientParts.join(",")})`;
