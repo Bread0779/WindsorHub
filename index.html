@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v10.0</title>
+    <title>Windsor Hub v10.1</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin: 20px 0 35px 0; order: -3; }
-        h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.6); }
+        h2 { color: #FFF; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; }
         
-        /* Main Hub 改為白框線 */
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
-        .hub-select { background: #000; border: none; color: #FF8C00; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
-        /* 下拉選單黑化 */
-        select option { background: #000 !important; color: #FFF; }
+        
+        /* 🛡️ 下拉選單純白化與去箭頭重繪 */
+        .hub-select, .time-select, #inputCat { 
+            background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none; /* 移除預設箭頭 */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
+        }
 
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
-        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FF8C00 !important; }
+        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
         
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
-        /* 日期選單白化 + 下拉黑化 */
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 130px; }
-        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 11px; outline: none; cursor: pointer; text-align: center; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
 
-        /* 圖表區塊高度微調以對應長引線 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
@@ -43,9 +44,11 @@
 
         .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
         input { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
-        #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; outline: none; box-sizing: border-box; }
+        
+        /* 🛡️ 數據存儲按鈕純白化 */
+        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; transition: 0.3s; }
+        .main-btn:active { background: #888; }
 
-        .main-btn { width: 100%; padding: 16px; background: #FF8C00; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0; order: 100; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 12px; margin-left: 10px; }
     </style>
@@ -111,7 +114,7 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.0 BORDER STRETCH</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.1 WHITE PURITY</div>
 </div>
 
 <script>
@@ -180,6 +183,7 @@
         if (sector) {
             drawLead(id, sector);
             editMode = { active: true, date: sector.date, index: sector.idx };
+            document.getElementById("modInput").classList.add("edit-active");
             document.getElementById("inputDate").value = sector.date;
             document.getElementById("inputName").value = sector.name;
             document.getElementById("inputCat").value = sector.cat;
@@ -210,24 +214,23 @@
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
     }
     
-    // 🛡️ v10.0 引線重塑：極限貼邊
+    // 🛡️ v10.1 核心更新：引線禁止向下，強制橫向貼邊，字體微縮
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
         
-        const centerX = 170, centerY = 105; // 容器寬度 340 居中
+        const centerX = 170, centerY = 105; 
         const rStart = 85, rExt = 120; 
         
         const x1 = centerX + rStart * Math.cos(rad), y1 = centerY + rStart * Math.sin(rad);
         let x2 = centerX + rExt * Math.cos(rad), y2 = centerY + rExt * Math.sin(rad);
         
-        // 垂直避讓邏輯
-        const cosVal = Math.cos(rad);
-        if (Math.abs(cosVal) < 0.4) { x2 = centerX + (cosVal >= 0 ? 80 : -80); }
-
+        // 🛡️ 強制橫向邏輯：禁止引線向下或向上卡住，強制往兩側延伸
         const isRightSide = x2 >= centerX;
-        
-        // 🛡️ 鎖定最外圍牆壁 (左右邊距僅留 5px)
+        if (Math.abs(Math.cos(rad)) < 0.5) {
+            x2 = centerX + (isRightSide ? 85 : -85);
+        }
+
         const xLabel = isRightSide ? 330 : 10;
         const yLabel = y2;
         const anchor = isRightSide ? "end" : "start";
@@ -240,15 +243,15 @@
         svg.appendChild(line);
         
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 8); t1.setAttribute("fill", "#FFFFFF"); 
-        t1.setAttribute("font-size", "16px"); t1.setAttribute("font-weight", "bold"); 
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 6); t1.setAttribute("fill", "#FFFFFF"); 
+        t1.setAttribute("font-size", "13px"); t1.setAttribute("font-weight", "bold"); /* 🛡️ 字體縮小為 13px */
         t1.setAttribute("text-anchor", anchor); t1.textContent = sector.name; svg.appendChild(t1);
 
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 16); 
+        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 14); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
-        t2.setAttribute("font-size", "14px"); t2.setAttribute("font-weight", "bold"); 
+        t2.setAttribute("font-size", "11px"); t2.setAttribute("font-weight", "bold"); /* 🛡️ 數字縮小為 11px */
         t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
     }
 
