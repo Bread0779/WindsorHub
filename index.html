@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v6.3</title>
+    <title>Windsor Hub v7.0</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #FFFFFF; color: #333; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -11,28 +11,28 @@
         header { text-align: center; margin: 15px 0 25px 0; order: -3; }
         h2 { color: #C6A15B; margin: 0; font-size: 24px; letter-spacing: 5px; font-weight: 900; }
 
-        /* 🛡️ 核心修正：加粗皇家藍框線 (2px) */
+        /* 🛡️ 核心基底：基富通藍 (Corporate Navy #0F1A2E) */
         .hub-ctrl { 
             background: #F8F8F8;
             border: none; 
-            border-bottom: 2px solid #0020C2; /* 更藍的純皇家藍 */
+            border-bottom: 2px solid #0F1A2E; /* 企業深藍 */
             border-radius: 12px; 
             padding: 10px 15px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); order: -2; position: relative; z-index: 100;
         }
-        .hub-select { background: transparent; border: none; color: #0020C2; font-size: 15px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
+        .hub-select { background: transparent; border: none; color: #0F1A2E; font-size: 15px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
 
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
-        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #0020C2 !important; }
+        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #0F1A2E !important; }
         
-        /* 🛡️ 模組邊框同步加粗深藍 */
-        .orb-area { background: #FCFCFC; border: 2px solid #0020C2; border-radius: 25px; padding: 20px; margin-bottom: 20px; text-align: center; }
+        /* 模組邊框：企業深藍 */
+        .orb-area { background: #FCFCFC; border: 2px solid #0F1A2E; border-radius: 25px; padding: 20px; margin-bottom: 20px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .orb-id { font-size: 22px; font-weight: 900; color: #0020C2; }
+        .orb-id { font-size: 22px; font-weight: 900; color: #0F1A2E; }
         
-        .time-ctrl { display: flex; background: #FFF; border: 2px solid #0020C2; border-radius: 6px; overflow: hidden; width: 130px; }
-        .time-select { flex-grow: 1; background: transparent; border: none; color: #0020C2; padding: 5px; font-size: 11px; outline: none; cursor: pointer; text-align: center; }
-        .del-x { background: #F5F5F5; color: #0020C2; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 2px solid #0020C2; opacity: 0.5; }
+        .time-ctrl { display: flex; background: #FFF; border: 2px solid #0F1A2E; border-radius: 6px; overflow: hidden; width: 130px; }
+        .time-select { flex-grow: 1; background: transparent; border: none; color: #0F1A2E; padding: 5px; font-size: 11px; outline: none; cursor: pointer; text-align: center; }
+        .del-x { background: #F5F5F5; color: #0F1A2E; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 2px solid #0F1A2E; opacity: 0.5; }
 
         .chart-container { position: relative; width: 240px; height: 240px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #F0F0F0; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
@@ -45,17 +45,16 @@
         .detail-item b { color: #333; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #FF4D4D; border: 1px solid #EEE; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
 
-        /* 🛡️ 輸入區邊框加粗同步 */
-        .section { background: #FCFCFC; padding: 25px; border-radius: 20px; margin-bottom: 15px; border: 2px solid #0020C2; box-sizing: border-box; transition: box-shadow 0.3s; }
-        .edit-active { box-shadow: 0 0 20px rgba(0, 32, 194, 0.2); border: 2px solid #0020C2 !important; }
+        .section { background: #FCFCFC; padding: 25px; border-radius: 20px; margin-bottom: 15px; border: 2px solid #0F1A2E; box-sizing: border-box; transition: box-shadow 0.3s; }
+        .edit-active { box-shadow: 0 0 20px rgba(15, 26, 46, 0.2); border: 2px solid #0F1A2E !important; }
         
         input, select { 
-            width: 100%; padding: 12px; background: #FFF; border: 1px solid #DDD; color: #0020C2; 
+            width: 100%; padding: 12px; background: #FFF; border: 1px solid #DDD; color: #0F1A2E; 
             border-radius: 10px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; 
         }
-        .main-btn { width: 100%; padding: 15px; background: #0020C2; color: #FFF; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
+        .main-btn { width: 100%; padding: 15px; background: #0F1A2E; color: #FFF; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         .footer { text-align: center; font-size: 9px; color: #AAA; margin: 30px 0; order: 100; }
-        .hub-btn { background: rgba(0, 32, 194, 0.05); color: #0020C2; border: 1px solid rgba(0, 32, 194, 0.2); border-radius: 4px; padding: 5px 10px; margin-left: 8px; }
+        .hub-btn { background: rgba(15, 26, 46, 0.05); color: #0F1A2E; border: 1px solid rgba(15, 26, 46, 0.2); border-radius: 4px; padding: 5px 10px; margin-left: 8px; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
@@ -124,7 +123,7 @@
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V6.3 ROYAL BLUE & BOLD LINE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v7.0 CORPORATE NAVY EDITION</div>
 </div>
 
 <script>
@@ -235,14 +234,17 @@
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#F0F0F0"; listEl.innerHTML = ""; }
     }
 
+    // 🛡️ 引線修正報告
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2;
         const rad = (mid - 90) * (Math.PI / 180);
-        const x1 = 130 + 100 * Math.cos(rad), y1 = 130 + 100 * Math.sin(rad), x2 = 130 + 120 * Math.cos(rad), y2 = 130 + 120 * Math.sin(rad);
+        
+        // 優化引線位置：半徑向外推移 (x1: 105, x2: 125)，徹底釋放空間
+        const x1 = 130 + 105 * Math.cos(rad), y1 = 130 + 105 * Math.sin(rad);
+        const x2 = 130 + 125 * Math.cos(rad), y2 = 130 + 125 * Math.sin(rad);
         const isR = x2 > 130, x3 = isR ? 255 : 5, y3 = y2;
-        // 🛡️ 修復引線顏色，與加粗皇家藍框同步
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#BBB" : (colors[sector.cat] || "#0020C2");
+        const color = (sector.hasNow && sector.amt < sector.cost) ? "#BBB" : (colors[sector.cat] || "#0F1A2E");
         
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
@@ -250,12 +252,14 @@
         svg.appendChild(line);
         
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", x3); t1.setAttribute("y", y3-5); t1.setAttribute("fill", "#0020C2"); t1.setAttribute("font-size", "10px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", isR?"end":"start");
+        // 盾牌同步：企業深藍字體，並加大 (14px + bold)
+        t1.setAttribute("x", x3); t1.setAttribute("y", y3-7); t1.setAttribute("fill", "#0F1A2E"); t1.setAttribute("font-size", "14px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", isR?"end":"start");
         t1.textContent = sector.name; svg.appendChild(t1);
 
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", x3); t2.setAttribute("y", y3+12); t2.setAttribute("fill", sector.amt>=sector.cost?"#28A745":"#DC3545"); t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR?"end":"start");
+        // 盾牌同步：數字也加大 (12px)
+        t2.setAttribute("x", x3); t2.setAttribute("y", y3+15); t2.setAttribute("fill", sector.amt>=sector.cost?"#28A745":"#DC3545"); t2.setAttribute("font-size", "12px"); t2.setAttribute("text-anchor", isR?"end":"start");
         t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
     }
 
