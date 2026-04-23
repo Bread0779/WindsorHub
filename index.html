@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v2.6</title>
+    <title>Windsor Hub v2.7</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
@@ -12,11 +12,14 @@
         
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* 加大 A 與 B 的字體 */
+        .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; letter-spacing: -1px; }
+
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; box-sizing: border-box; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; width: 100%; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
 
-        /* 極厚圓環設定：內孔縮至 40% */
         .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { 
             position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; 
@@ -49,7 +52,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:12px; font-weight:bold; color:#ff8c00">● A</span>
+            <span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="updateRing('A', this.value)">
                     <option value="">SELECT DATE</option>
@@ -81,7 +84,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:12px; font-weight:bold; color:#ff8c00">● B</span>
+            <span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="updateRing('B', this.value)">
                     <option value="">SELECT DATE</option>
@@ -97,12 +100,12 @@
 
     <div class="footer">
         © 2026 WINDSOR SHIELD ANALYTICS<br>
-        v2.6 MINIMAL ARMOR EDITION
+        v2.7 EQUAL-GAP EDITION
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem("windsorHub_v6") || "{}");
+    let db = JSON.parse(localStorage.getItem("windsorHub_v7") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
 
     function refreshSelectors() {
@@ -129,7 +132,7 @@
         if (!db[d]) db[d] = [];
         
         db[d].push({ cat: c, amt: a });
-        localStorage.setItem("windsorHub_v6", JSON.stringify(db));
+        localStorage.setItem("windsorHub_v7", JSON.stringify(db));
         
         refreshSelectors();
         updateRing("A", document.getElementById("selA").value);
@@ -141,7 +144,7 @@
         if (!date) return;
         if (confirm("刪除 " + date + "?")) {
             delete db[date];
-            localStorage.setItem("windsorHub_v6", JSON.stringify(db));
+            localStorage.setItem("windsorHub_v7", JSON.stringify(db));
             refreshSelectors();
             updateRing("A", "");
             updateRing("B", "");
@@ -160,14 +163,22 @@
             if (total === 0) { ringEl.style.background = "#222"; return; }
 
             let currentDeg = 0;
-            const gradientParts = items.map(item => {
-                const p = (item.amt / total) * 100;
+            // 每個項目之間的物理間隙角度
+            const gapDeg = 1.5; 
+            const gradientParts = [];
+
+            items.forEach((item, index) => {
+                const p = (item.amt / total) * 360;
                 const start = currentDeg;
                 const end = currentDeg + p;
+                
+                // 填入顏色，並在結尾扣除固定度數的間隙
+                gradientParts.push(`${colors[item.cat]} ${start}deg ${end - gapDeg}deg`);
+                gradientParts.push(`transparent ${end - gapDeg}deg ${end}deg`);
+                
                 currentDeg = end;
-                // 維持精緻的 0.5% 間隙
-                return `${colors[item.cat]} ${start}% ${end - 0.5}%, #000 ${end - 0.5}% ${end}%`;
             });
+
             ringEl.style.background = `conic-gradient(${gradientParts.join(",")})`;
         } else {
             valEl.innerText = "$ 0";
