@@ -3,44 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v5.0</title>
+    <title>Windsor Hub v5.1</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
-        
         .hub-ctrl { background: #111; border: 1px solid #ff8c00; border-radius: 15px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 0 15px rgba(255,140,0,0.1); order: -2; position: relative; z-index: 100; }
         .hub-select { background: transparent; border: none; color: #ff8c00; font-size: 14px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         .hub-btn { background: #222; color: #ff8c00; border: 1px solid #ff8c00; border-radius: 6px; padding: 4px 8px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; order: -1; }
         h2 { color: #ff8c00; margin: 0; font-size: 18px; letter-spacing: 2px; }
-        
-        /* 拖移與區塊樣式 */
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px dashed #ff8c00 !important; }
-        
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; }
-        
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-
         .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .chart-center { z-index: 6; text-align: center; pointer-events: none; }
         .center-val { font-size: 18px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-        
         .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
-
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #ff8c00; box-sizing: border-box; transition: box-shadow 0.3s; }
         .edit-active { box-shadow: 0 0 20px rgba(255, 140, 0, 0.6); border: 1px solid #fff !important; }
-        
         input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; position: relative; z-index: 20; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; order: 100; }
@@ -54,12 +44,10 @@
         <button class="hub-btn" onclick="addNewHub()">＋帳本</button>
         <button class="hub-btn" style="color:#ff3131; border-color:#ff3131;" onclick="deleteCurrentHub()">🗑</button>
     </div>
-
     <header><h2>WINDSOR HUB</h2></header>
     
     <div class="draggable-mod orb-area" id="modA" draggable="true">
-        <div class="orb-header">
-            <span class="orb-id">● A</span>
+        <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('A')">✕</button>
@@ -87,8 +75,7 @@
     </div>
 
     <div class="draggable-mod orb-area" id="modB" draggable="true">
-        <div class="orb-header">
-            <span class="orb-id">● B</span>
+        <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('B')">✕</button>
@@ -101,8 +88,6 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v5.0 MASTER STRUCTURE</div>
 </div>
 
 <script>
@@ -112,20 +97,16 @@
     let ringSectors = { A: [], B: [] };
     let editMode = { active: false, date: null, index: -1 };
 
-    // --- 拖移與加載邏輯 ---
-    const container = document.getElementById('modContainer');
     function initDraggable() {
         document.querySelectorAll('.draggable-mod').forEach(d => {
             d.addEventListener('dragstart', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') {
-                    e.preventDefault(); return;
-                }
+                if (['INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName)) { e.preventDefault(); return; }
                 d.classList.add('dragging');
             });
             d.addEventListener('dragend', () => { d.classList.remove('dragging'); saveOrder(); });
         });
     }
-
+    const container = document.getElementById('modContainer');
     container.addEventListener('dragover', e => {
         e.preventDefault();
         const dragging = document.querySelector('.dragging');
@@ -133,9 +114,8 @@
         const after = getAfter(container, e.clientY);
         after == null ? container.appendChild(dragging) : container.insertBefore(dragging, after);
     });
-
-    function getAfter(container, y) {
-        const els = [...container.querySelectorAll('.draggable-mod:not(.dragging)')];
+    function getAfter(c, y) {
+        const els = [...c.querySelectorAll('.draggable-mod:not(.dragging)')];
         return els.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
@@ -148,7 +128,6 @@
         if (order) order.forEach(id => { const el = document.getElementById(id); if (el) container.appendChild(el); });
     }
 
-    // --- 核心邏輯 ---
     function safeEval(str) { try { return Function('"use strict"; return (' + str.toString().replace(/[^-()\d/*+.]/g, '') + ')')(); } catch (e) { return 0; } }
 
     window.saveData = function() {
@@ -158,7 +137,7 @@
         const cost = safeEval(document.getElementById("inputAmt").value) || 0;
         const nowValStr = document.getElementById("inputNow").value;
         const current = nowValStr ? safeEval(nowValStr) : cost;
-        const hasNow = nowValStr !== "";
+        const hasNow = nowValStr !== ""; // 關鍵修正：確保重新存檔時正確判定監控狀態
 
         if (!d) { alert("請選擇日期"); return; }
         if (!hubs[currentHubName][d]) hubs[currentHubName][d] = [];
@@ -222,7 +201,7 @@
             valEl.innerText = "$ " + total.toLocaleString();
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span>${i.name}</span><b style="color:${i.amt>=i.cost?'#39ff14':'#ff3131'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:2px solid ${colors[i.cat]}; padding-left:5px">${i.name}</span><b style="color:${i.amt>=i.cost?'#39ff14':'#ff3131'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
             if (total === 0) { ringEl.style.background = "#222"; return; }
             let curD = 0;
@@ -266,7 +245,6 @@
         ["selA", "selB"].forEach(id => { const el = document.getElementById(id); const cur = el.value; el.innerHTML = "<option value=''>SELECT</option>"; dates.forEach(d => { const opt = document.createElement("option"); opt.value = d; opt.innerText = d; el.appendChild(opt); }); el.value = hubs[currentHubName][cur] ? cur : ""; });
     }
     function initHubUI() { const s = document.getElementById("hubSelector"); s.innerHTML = ""; Object.keys(hubs).forEach(n => { const o = document.createElement("option"); o.value = n; o.innerText = n; if (n === currentHubName) o.selected = true; s.appendChild(o); }); refreshSelectors(); }
-    
     initDraggable(); loadOrder(); initHubUI();
 </script>
 </body>
