@@ -3,77 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v2.9</title>
+    <title>Windsor Hub v2.8.1</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         h2 { color: #ff8c00; margin: 0; font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
-        
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; }
-
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-
-        /* 圓環容器 */
-        .chart-container { position: relative; width: 200px; height: 200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        
-        /* 厚圓環設定 */
-        .donut-ring { 
-            position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; 
-            -webkit-mask: radial-gradient(transparent 40%, black 41%); 
-            mask: radial-gradient(transparent 40%, black 41%); 
-            transition: background 0.3s ease;
-        }
-        
-        /* 中心顯示區域 - 關閉滑鼠事件，讓下層圓環接收 */
-        .chart-center { z-index: 10; pointer-events: none; text-align: center; width: 70%; }
-        
-        /* 項目名稱 (動態切換) */
-        .item-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px; min-height: 14px; word-wrap: break-word; }
-        
-        /* 金額顯示 (動態切換) */
+        .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .donut-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); }
+        .chart-center { z-index: 10; pointer-events: none; }
+        .item-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
         .center-val { font-size: 18px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-
+        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; min-height: 20px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 4px 0; color: #aaa; }
+        .detail-item b { color: #fff; }
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
         label { font-size: 10px; color: #888; display: block; margin-bottom: 5px; }
-        input, select { 
-            width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; 
-            border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; -webkit-appearance: none;
-        }
+        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <header><h2>WINDSOR HUB</h2></header>
-
     <div class="orb-area">
-        <div class="orb-header">
-            <span class="orb-id">● A</span>
+        <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selA"><option value="">SELECT</option></select>
+                <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('A')">✕</button>
             </div>
         </div>
-        <div class="chart-container" id="containerA" 
-             onmousedown="startDetect(event, 'A')" onmousemove="detect(event, 'A')" onmouseup="endDetect('A')"
-             ontouchstart="startDetect(event, 'A')" ontouchmove="detect(event, 'A')" ontouchend="endDetect('A')"
-             onmouseleave="endDetect('A')">
+        <div class="chart-container">
             <div id="ringA" class="donut-ring"></div>
-            <div class="chart-center">
-                <div id="nameA" class="item-label">TOTAL</div>
-                <div id="valA" class="center-val">$ 0</div>
-            </div>
+            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
+        <div id="listA" class="detail-list"></div>
     </div>
-
     <div class="section">
+        <h4>數據寫入</h4>
         <label>日期</label><input type="date" id="inputDate">
         <label>項目名稱</label><input type="text" id="inputName" placeholder="例如：日本旅遊">
         <label>類別金額</label>
@@ -85,39 +59,25 @@
         <input type="number" id="inputAmt" placeholder="0.00">
         <button class="main-btn" onclick="saveData()">數據存儲</button>
     </div>
-
     <div class="orb-area">
-        <div class="orb-header">
-            <span class="orb-id">● B</span>
+        <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selB"><option value="">SELECT</option></select>
+                <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('B')">✕</button>
             </div>
         </div>
-        <div class="chart-container" id="containerB"
-             onmousedown="startDetect(event, 'B')" onmousemove="detect(event, 'B')" onmouseup="endDetect('B')"
-             ontouchstart="startDetect(event, 'B')" ontouchmove="detect(event, 'B')" ontouchend="endDetect('B')"
-             onmouseleave="endDetect('B')">
+        <div class="chart-container">
             <div id="ringB" class="donut-ring"></div>
-            <div class="chart-center">
-                <div id="nameB" class="item-label">TOTAL</div>
-                <div id="valB" class="center-val">$ 0</div>
-            </div>
+            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
+        <div id="listB" class="detail-list"></div>
     </div>
-
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v2.9 TOUCH DECODER</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v2.8.1 STABLE</div>
 </div>
-
 <script>
     let db = JSON.parse(localStorage.getItem("windsorHub_v9") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
-    
-    // 儲存當前環的繪製數據，用於觸控計算
-    let currentSectors = { A: [], B: [] };
-    let isDetecting = false;
 
-    // 初始化下拉選單
     function refreshSelectors() {
         const dates = Object.keys(db).sort();
         ["selA", "selB"].forEach(id => {
@@ -129,5 +89,60 @@
                 opt.value = d; opt.innerText = d; el.appendChild(opt);
             });
             el.value = db[cur] ? cur : "";
-            // 下拉選單改變時觸發圓環更新
-            el.onchange = function() { updateRing(id.
+        });
+    }
+
+    function saveData() {
+        const d = document.getElementById("inputDate").value;
+        const c = document.getElementById("inputCat").value;
+        const n = document.getElementById("inputName").value || "未命名";
+        const a = parseFloat(document.getElementById("inputAmt").value) || 0;
+        if (!d) { alert("請選擇日期"); return; }
+        if (!db[d]) db[d] = [];
+        db[d].push({ cat: c, name: n, amt: a });
+        localStorage.setItem("windsorHub_v9", JSON.stringify(db));
+        refreshSelectors();
+        updateRing("A", document.getElementById("selA").value);
+        updateRing("B", document.getElementById("selB").value);
+        alert("數據存儲成功");
+    }
+
+    function deleteDate(id) {
+        const d = document.getElementById("sel" + id).value;
+        if (!d || !confirm("刪除 " + d + "?")) return;
+        delete db[d];
+        localStorage.setItem("windsorHub_v9", JSON.stringify(db));
+        refreshSelectors();
+        updateRing("A", ""); updateRing("B", "");
+    }
+
+    function updateRing(id, date) {
+        const valEl = document.getElementById("val" + id);
+        const ringEl = document.getElementById("ring" + id);
+        const listEl = document.getElementById("list" + id);
+        if (db[date]) {
+            const items = db[date];
+            const total = items.reduce((sum, i) => sum + i.amt, 0);
+            valEl.innerText = "$ " + total.toLocaleString();
+            listEl.innerHTML = items.map(i => `<div class="detail-item"><span>${i.name}</span><b>$ ${i.amt.toLocaleString()}</b></div>`).join('');
+            if (total === 0) { ringEl.style.background = "#222"; return; }
+            let currentDeg = 0;
+            const gapDeg = 1.5; 
+            const gps = items.map(i => {
+                const p = (i.amt / total) * 360;
+                const s = currentDeg;
+                const e = currentDeg + p;
+                currentDeg = e;
+                return `${colors[i.cat]} ${s}deg ${e - gapDeg}deg, transparent ${e - gapDeg}deg ${e}deg`;
+            });
+            ringEl.style.background = `conic-gradient(${gps.join(",")})`;
+        } else {
+            valEl.innerText = "$ 0";
+            ringEl.style.background = "#222";
+            listEl.innerHTML = "";
+        }
+    }
+    refreshSelectors();
+</script>
+</body>
+</html>
