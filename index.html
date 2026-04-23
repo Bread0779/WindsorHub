@@ -3,63 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v4.1</title>
+    <title>Windsor Hub v4.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
-        
-        /* 帳本切換中樞 */
+        .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
         .hub-ctrl { background: #111; border: 1px solid #ff8c00; border-radius: 15px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 0 15px rgba(255,140,0,0.1); }
         .hub-select { background: transparent; border: none; color: #ff8c00; font-size: 14px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         .hub-btn { background: #222; color: #ff8c00; border: 1px solid #ff8c00; border-radius: 6px; padding: 4px 8px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         h2 { color: #ff8c00; margin: 0; font-size: 18px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
-        
-        /* 拖移模組樣式 */
-        .draggable-mod { cursor: grab; transition: transform 0.2s, opacity 0.2s; user-select: none; }
-        .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px dashed #ff8c00 !important; }
-
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; position: relative; }
-        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; pointer-events: none; }
-        .orb-header * { pointer-events: auto; }
+        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; }
-        
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-
-        .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; pointer-events: none; }
-        .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; pointer-events: auto; cursor: pointer; }
+        .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; transition: background 0.4s; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .chart-center { z-index: 6; text-align: center; }
+        .chart-center { z-index: 6; pointer-events: none; text-align: center; }
         .center-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
         .center-val { font-size: 18px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-        
-        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; pointer-events: auto; }
+        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; color: #aaa; border-bottom: 1px solid #1a1a1a; }
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
-
-        .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #ff8c00; box-sizing: border-box; }
-        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
+        .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; order: 100; }
+        .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
 
-<div class="container" id="modContainer">
-    <div class="hub-ctrl" style="order: -1;">
+<div class="container">
+    <div class="hub-ctrl">
         <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
         <button class="hub-btn" onclick="addNewHub()">＋帳本</button>
         <button class="hub-btn" style="color:#ff3131; border-color:#ff3131;" onclick="deleteCurrentHub()">🗑</button>
     </div>
 
-    <header style="order: 0;"><h2>WINDSOR HUB</h2></header>
+    <header><h2>WINDSOR HUB</h2></header>
     
-    <div class="draggable-mod orb-area" id="modA" draggable="true">
+    <div class="orb-area">
         <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">SELECT</option></select>
@@ -69,12 +55,12 @@
         <div class="chart-container">
             <div id="ringA" class="donut-ring" onclick="event.stopPropagation()"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
-            <div class="chart-center"><div class="center-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
+            <div class="chart-center"><div class="center-label">TOTAL (VAL)</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
         <div id="listA" class="detail-list"></div>
     </div>
 
-    <div class="draggable-mod section" id="modInput" draggable="true">
+    <div class="section">
         <input type="date" id="inputDate">
         <input type="text" id="inputName" placeholder="項目名稱">
         <select id="inputCat">
@@ -82,11 +68,12 @@
             <option value="invest">投資類 (青色)</option>
             <option value="reserve">預備金 (灰色)</option>
         </select>
-        <input type="number" id="inputAmt" placeholder="金額">
+        <input type="text" id="inputAmt" placeholder="買入成本 (支援 10+20)">
+        <input type="text" id="inputNow" placeholder="當前現值 (支援 10*1.1)">
         <button class="main-btn" onclick="window.saveData()">數據存儲</button>
     </div>
 
-    <div class="draggable-mod orb-area" id="modB" draggable="true">
+    <div class="orb-area">
         <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">SELECT</option></select>
@@ -96,12 +83,12 @@
         <div class="chart-container">
             <div id="ringB" class="donut-ring" onclick="event.stopPropagation()"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
-            <div class="chart-center"><div class="center-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
+            <div class="chart-center"><div class="center-label">TOTAL (VAL)</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v4.1 MODULAR DRAG</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v4.5 PERFORMANCE TERMINAL</div>
 </div>
 
 <script>
@@ -110,52 +97,6 @@
     const colors = { travel: "#0a377d", invest: "#00f3ff", reserve: "#888" };
     let ringSectors = { A: [], B: [] };
 
-    // --- 拖移邏輯 ---
-    const container = document.getElementById('modContainer');
-    const draggables = document.querySelectorAll('.draggable-mod');
-
-    draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => { draggable.classList.add('dragging'); });
-        draggable.addEventListener('dragend', () => { 
-            draggable.classList.remove('dragging');
-            saveModuleOrder();
-        });
-    });
-
-    container.addEventListener('dragover', e => {
-        e.preventDefault();
-        const afterElement = getDragAfterElement(container, e.clientY);
-        const dragging = document.querySelector('.dragging');
-        if (afterElement == null) { container.appendChild(dragging); } 
-        else { container.insertBefore(dragging, afterElement); }
-    });
-
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.draggable-mod:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } 
-            else { return closest; }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    function saveModuleOrder() {
-        const order = [...container.querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder', JSON.stringify(order));
-    }
-
-    function loadModuleOrder() {
-        const order = JSON.parse(localStorage.getItem('windsorModOrder'));
-        if (order) {
-            order.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) container.appendChild(el);
-            });
-        }
-    }
-
-    // --- 核心帳本邏輯 ---
     function initHubUI() {
         const selector = document.getElementById("hubSelector");
         selector.innerHTML = "";
@@ -168,48 +109,31 @@
         refreshSelectors();
     }
 
-    window.addNewHub = function() {
-        const name = prompt("帳本名稱:");
-        if (name && !hubs[name]) { hubs[name] = {}; saveAll(); switchHub(name); }
-    };
-
-    window.switchHub = function(name) {
-        currentHubName = name;
-        localStorage.setItem("windsorActiveHub", name);
-        initHubUI();
-        window.updateRing("A", ""); window.updateRing("B", "");
-    };
-
-    function saveAll() { localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); }
-
-    window.refreshSelectors = function() {
-        const db = hubs[currentHubName];
-        const dates = Object.keys(db).sort();
-        ["selA", "selB"].forEach(id => {
-            const el = document.getElementById(id);
-            const cur = el.value;
-            el.innerHTML = "<option value=''>SELECT</option>";
-            dates.forEach(d => {
-                const opt = document.createElement("option");
-                opt.value = d; opt.innerText = d; el.appendChild(opt);
-            });
-            el.value = db[cur] ? cur : "";
-        });
+    // 安全計算機功能
+    function safeEval(str) {
+        try {
+            return Function('"use strict"; return (' + str.replace(/[^-()\d/*+.]/g, '') + ')')();
+        } catch (e) { return 0; }
     }
 
     window.saveData = function() {
         const d = document.getElementById("inputDate").value;
         const c = document.getElementById("inputCat").value;
         const n = document.getElementById("inputName").value || "未命名";
-        const a = parseFloat(document.getElementById("inputAmt").value) || 0;
+        const aStr = document.getElementById("inputAmt").value;
+        const nStr = document.getElementById("inputNow").value;
+        
+        const cost = safeEval(aStr) || 0;
+        const current = nStr ? (safeEval(nStr) || 0) : cost; // 若沒填現值，預設等於成本
+
         if (!d) { alert("請選擇日期"); return; }
         if (!hubs[currentHubName][d]) hubs[currentHubName][d] = [];
-        hubs[currentHubName][d].push({ cat: c, name: n, amt: a });
+        hubs[currentHubName][d].push({ cat: c, name: n, cost: cost, amt: current }); // amt 欄位改存現值，維持圓環比例邏輯
         saveAll();
         refreshSelectors();
         window.updateRing("A", document.getElementById("selA").value);
         window.updateRing("B", document.getElementById("selB").value);
-        alert(`已存入 [${currentHubName}]`);
+        alert(`存入成功: $${current}`);
     }
 
     window.updateRing = function(id, date) {
@@ -217,39 +141,86 @@
         const ringEl = document.getElementById("ring" + id);
         const listEl = document.getElementById("list" + id);
         const svgEl = document.getElementById("leads" + id);
-        svgEl.innerHTML = ""; ringSectors[id] = [];
+        svgEl.innerHTML = "";
+        ringSectors[id] = [];
         const db = hubs[currentHubName];
+        
         if (db[date]) {
             const items = db[date];
-            const total = items.reduce((sum, i) => sum + i.amt, 0);
-            valEl.innerText = "$ " + total.toLocaleString();
-            listEl.innerHTML = items.map((i, idx) => `<div class="detail-item"><span>${i.name}</span><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`).join('');
+            const totalVal = items.reduce((sum, i) => sum + i.amt, 0);
+            valEl.innerText = "$ " + totalVal.toLocaleString();
+            listEl.innerHTML = items.map((i, idx) => {
+                const perf = i.cost > 0 ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) : 0;
+                const perfColor = perf >= 0 ? "#39ff14" : "#ff3131";
+                return `
+                <div class="detail-item">
+                    <span style="border-left:2px solid ${colors[i.cat]}; padding-left:5px">${i.name}</span>
+                    <b style="color:${perfColor}">${perf}%</b>
+                    <b>$ ${i.amt.toLocaleString()}</b>
+                    <button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button>
+                </div>`;
+            }).join('');
+
+            if (totalVal === 0) { ringEl.style.background = "#222"; return; }
             let currentDeg = 0;
+            const blackLineDeg = 0.8; 
             const gps = items.map((i) => {
-                const pDeg = (i.amt / total) * 360;
-                const s = currentDeg; const e = currentDeg + pDeg;
-                ringSectors[id].push({ start: s, end: e, name: i.name, amt: i.amt, cat: i.cat });
+                const pDeg = (i.amt / totalVal) * 360;
+                const s = currentDeg;
+                const e = currentDeg + pDeg;
+                ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, cat: i.cat });
                 currentDeg = e;
-                return `${colors[i.cat]} ${s}deg ${e - 0.8}deg, #000 ${e - 0.8}deg ${e}deg`;
+                
+                // 熱力色塊邏輯：虧損時降低亮度
+                let color = colors[i.cat];
+                if (i.amt < i.cost) {
+                    color = "#333"; // 虧損則變暗沉
+                }
+                return `${color} ${s}deg ${e - blackLineDeg}deg, #000 ${e - blackLineDeg}deg ${e}deg`;
             });
             ringEl.style.background = `conic-gradient(${gps.join(",")})`;
-        } else { valEl.innerText = "$ 0"; ringEl.style.background = "#222"; listEl.innerHTML = ""; }
+        } else {
+            valEl.innerText = "$ 0"; ringEl.style.background = "#222"; listEl.innerHTML = "";
+        }
     }
 
+    // 以下為基礎功能維持
+    window.addNewHub = function() {
+        const name = prompt("帳本名稱:");
+        if (name && !hubs[name]) { hubs[name] = {}; saveAll(); switchHub(name); }
+    };
+    window.deleteCurrentHub = function() {
+        if (Object.keys(hubs).length <= 1) return;
+        if (confirm(`刪除 [${currentHubName}]？`)) { delete hubs[currentHubName]; currentHubName = Object.keys(hubs)[0]; saveAll(); switchHub(currentHubName); }
+    };
+    window.switchHub = function(name) { currentHubName = name; localStorage.setItem("windsorActiveHub", name); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
+    function saveAll() { localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); }
+    window.refreshSelectors = function() {
+        const dates = Object.keys(hubs[currentHubName]).sort();
+        ["selA", "selB"].forEach(id => {
+            const el = document.getElementById(id); const cur = el.value;
+            el.innerHTML = "<option value=''>SELECT</option>";
+            dates.forEach(d => { const opt = document.createElement("option"); opt.value = d; opt.innerText = d; el.appendChild(opt); });
+            el.value = hubs[currentHubName][cur] ? cur : "";
+        });
+    }
     window.removeItem = function(date, index, ringId) {
         if (!confirm("確定移除？")) return;
         hubs[currentHubName][date].splice(index, 1);
-        saveAll(); refreshSelectors();
-        window.updateRing("A", document.getElementById("selA").value);
-        window.updateRing("B", document.getElementById("selB").value);
+        if (hubs[currentHubName][date].length === 0) delete hubs[currentHubName][date];
+        saveAll(); refreshSelectors(); window.updateRing("A", document.getElementById("selA").value); window.updateRing("B", document.getElementById("selB").value);
     };
-
+    window.deleteDate = function(id) {
+        const d = document.getElementById("sel" + id).value;
+        if (!d || !confirm("刪除整天？")) return;
+        delete hubs[currentHubName][d]; saveAll(); refreshSelectors(); window.updateRing("A", ""); window.updateRing("B", "");
+    }
     window.clearLeads = function() { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; }
-
     function handleRingClick(e, id) {
         e.stopPropagation();
         const rect = e.target.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
         let clickX = e.touches ? e.touches[0].clientX : e.clientX;
         let clickY = e.touches ? e.touches[0].clientY : e.clientY;
         const dx = clickX - centerX, dy = clickY - centerY;
@@ -258,16 +229,16 @@
         const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
         if (sector) drawLeadLine(id, sector);
     }
-
     function drawLeadLine(id, sector) {
-        const svgEl = document.getElementById("leads" + id); svgEl.innerHTML = "";
+        const svgEl = document.getElementById("leads" + id);
+        svgEl.innerHTML = "";
         const midDeg = sector.start + (sector.end - sector.start) / 2;
         const rad = (midDeg - 90) * (Math.PI / 180);
         const ringR = 90, svgC = 130;
         const x1 = svgC + ringR * Math.cos(rad), y1 = svgC + ringR * Math.sin(rad);
         const x2 = svgC + 110 * Math.cos(rad), y2 = svgC + 110 * Math.sin(rad);
         const isR = x2 > svgC, x3 = isR ? svgC + 120 : svgC - 120, y3 = y2;
-        const color = colors[sector.cat];
+        const color = sector.amt < sector.cost ? "#555" : colors[sector.cat];
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
         line.setAttribute("stroke", color); line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "2,2");
@@ -278,18 +249,16 @@
         t1.setAttribute("text-anchor", isR ? "start" : "end"); t1.textContent = sector.name;
         svgEl.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t2.setAttribute("x", x3); t2.setAttribute("y", y3 + 12); t2.setAttribute("fill", "#39ff14");
+        t2.setAttribute("x", x3); t2.setAttribute("y", y3 + 12); t2.setAttribute("fill", sector.amt >= sector.cost ? "#39ff14" : "#ff3131");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR ? "start" : "end");
-        t2.textContent = `$ ${sector.amt.toLocaleString()}`;
+        t2.textContent = `$ ${sector.amt.toLocaleString()} (${sector.cost > 0 ? ((sector.amt-sector.cost)/sector.cost*100).toFixed(1) : 0}%)`;
         svgEl.appendChild(t2);
     }
-
     ["ringA", "ringB"].forEach(rid => {
         const el = document.getElementById(rid);
         el.addEventListener("click", (e) => handleRingClick(e, rid.replace("ring", "")));
+        el.addEventListener("touchstart", (e) => handleRingClick(e, rid.replace("ring", "")));
     });
-
-    loadModuleOrder();
     initHubUI();
 </script>
 </body>
