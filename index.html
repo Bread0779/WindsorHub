@@ -3,42 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v9.7</title>
+    <title>Windsor Hub v9.9</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #080808; color: #EEE; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin: 20px 0 35px 0; order: -3; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.6); }
-        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FF8C00; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 0 20px rgba(255,140,0,0.2); order: -2; position: relative; z-index: 100; }
+        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FF8C00; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
         .hub-select { background: transparent; border: none; color: #FF8C00; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FF8C00 !important; }
-        .orb-area { background: #000; border: 2px solid #FF8C00; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: inset 0 0 15px rgba(255,140,0,0.1); }
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .orb-id { font-size: 24px; font-weight: 900; color: #FF8C00; }
-        .time-ctrl { display: flex; background: #000; border: 1px solid rgba(255,140,0,0.5); border-radius: 8px; overflow: hidden; width: 130px; }
-        .time-select { flex-grow: 1; background: transparent; border: none; color: #FF8C00; padding: 8px; font-size: 11px; outline: none; cursor: pointer; text-align: center; font-weight: bold; }
-        .del-x { background: #1a1a1a; color: #666; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid rgba(255,140,0,0.3); }
+        .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
+        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 130px; }
+        .time-select { flex-grow: 1; background: transparent; border: none; color: #FFF; padding: 8px; font-size: 11px; outline: none; cursor: pointer; text-align: center; }
+        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         .chart-container { position: relative; width: 240px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .chart-center { z-index: 6; text-align: center; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .chart-center { z-index: 6; text-align: center; pointer-events: none; }
         .center-val { font-size: 24px; font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); } 
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #222; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
-        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #AAA; }
-        .detail-item b { color: #EEE; margin-left: auto; margin-right: 12px; font-size: 13px; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #222; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
-        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FF8C00; box-sizing: border-box; }
-        .edit-active { box-shadow: 0 0 25px rgba(255, 140, 0, 0.4); border: 2px solid #FF8C00 !important; }
-        input, select { width: 100%; padding: 14px; background: #080808; border: 1px solid #222; color: #EEE; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
+        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
+        .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
+        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
+        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
+        input, select { width: 100%; padding: 14px; background: #080808; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
+        
+        /* 🛡️ 下拉選單顏色校準 */
         #inputCat option[value="travel"] { color: #2F353B; }
         #inputCat option[value="savings"] { color: #C0C0C0; }
         #inputCat option[value="cash"] { color: #1A1A1B; }
         #inputCat option[value="invest"] { color: #F8F9FA; }
         #inputCat option[value="uninvested"] { color: #47586B; }
+
         .main-btn { width: 100%; padding: 16px; background: #FF8C00; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0; order: 100; }
-        .hub-btn { background: rgba(255,140,0,0.05); color: #FF8C00; border: 1px solid rgba(255,140,0,0.2); border-radius: 6px; padding: 5px 12px; margin-left: 10px; }
+        .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 12px; margin-left: 10px; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
@@ -48,12 +50,11 @@
         <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
         <div style="display:flex">
             <button class="hub-btn" onclick="addNewHub()">＋</button>
-            <button class="hub-btn" style="color:#FF003C;" onclick="deleteCurrentHub()">🗑</button>
+            <button class="hub-btn" style="color:#FF003C; border-color: #FF003C;" onclick="deleteCurrentHub()">🗑</button>
         </div>
     </div>
     <div class="draggable-mod orb-area" id="modA" draggable="true">
-        <div class="orb-header">
-            <span class="orb-id">● A</span>
+        <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">選取日期</option></select>
                 <button class="del-x" onclick="deleteDate('A')">✕</button>
@@ -63,7 +64,7 @@
             <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center">
-                <div style="font-size:10px;color:#666;text-transform:uppercase">資產總額</div>
+                <div style="font-size:10px;color:#888;text-transform:uppercase">資產總額</div>
                 <div id="valA" class="center-val">$ 0</div>
             </div>
         </div>
@@ -84,8 +85,7 @@
         <button class="main-btn" onclick="window.saveData()">數據存儲</button>
     </div>
     <div class="draggable-mod orb-area" id="modB" draggable="true">
-        <div class="orb-header">
-            <span class="orb-id">● B</span>
+        <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">選取日期</option></select>
                 <button class="del-x" onclick="deleteDate('B')">✕</button>
@@ -95,18 +95,27 @@
             <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center">
-                <div style="font-size:10px;color:#666;text-transform:uppercase">資產總額</div>
+                <div style="font-size:10px;color:#888;text-transform:uppercase">資產總額</div>
                 <div id="valB" class="center-val">$ 0</div>
             </div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V9.7 FINAL STABLE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V9.9 PERFORMANCE CRAFT</div>
 </div>
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
-    const colors = { travel: "#2F353B", savings: "#C0C0C0", cash: "#1A1A1B", invest: "#F8F9FA", uninvested: "#47586B" };
+    
+    // 🛡️ 總裁指定：超跑配色系統
+    const colors = { 
+        travel: "#2F353B",      // 深碳灰
+        savings: "#C0C0C0",     // 亮銀
+        cash: "#1A1A1B",        // 碳纖維黑
+        invest: "#F8F9FA",      // 冰川白
+        uninvested: "#47586B"   // 石板藍
+    };
+
     let ringSectors = { A: [], B: [] }, editMode = { active: false, date: null, index: -1 };
 
     function initDraggable() {
@@ -188,14 +197,14 @@
             valEl.innerText = "$ " + total.toLocaleString();
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px; color:${colors[i.cat]}; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
             if (total === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / total) * 360, s = curD, e = curD + p; curD = e;
                 ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, cat: i.cat, hasNow: i.hasNow, idx, date });
-                let color = (i.hasNow && i.amt < i.cost) ? "#222" : (colors[i.cat] || "#FF8C00");
+                let color = (i.hasNow && i.amt < i.cost) ? "#222" : colors[i.cat];
                 return `${color} ${s}deg ${e - 0.8}deg, #000 ${e - 0.8}deg ${e}deg`;
             }).join(",")})`;
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
@@ -207,25 +216,18 @@
         const x1 = centerX + rStart * Math.cos(rad), y1 = centerY + rStart * Math.sin(rad);
         let x2 = centerX + rExt * Math.cos(rad), y2 = centerY + rExt * Math.sin(rad);
         const cosVal = Math.cos(rad);
-        if (Math.abs(cosVal) < 0.3) { x2 = centerX + (cosVal >= 0 ? 60 : -60); }
-        const isRightSide = x2 >= centerX, xLabel = isRightSide ? 250 : 10, yLabel = y2;
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#222" : colors[sector.cat];
+        if (Math.abs(cosVal) < 0.3) { x2 = centerX + (cosVal >= 0 ? 65 : -65); }
+        const isRightSide = x2 >= centerX, xLabel = isRightSide ? 250 : 10, anchor = isRightSide ? "end" : "start";
+        const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${yLabel}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
-        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1");
+        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
+        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1");
         svg.appendChild(line);
-        const anchor = isRightSide ? "end" : "start";
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xLabel); t1.setAttribute("y", yLabel - 8); t1.setAttribute("fill", "#FFFFFF"); 
-        t1.setAttribute("font-size", "15px"); t1.setAttribute("font-weight", "bold"); 
-        t1.setAttribute("text-anchor", anchor); t1.textContent = sector.name; svg.appendChild(t1);
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 8); t1.setAttribute("fill", "#FFFFFF"); t1.setAttribute("font-size", "15px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", anchor); t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", xLabel); t2.setAttribute("y", yLabel + 16); 
-        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
-        t2.setAttribute("font-size", "12px"); t2.setAttribute("font-weight", "bold"); 
-        t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
+        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 16); t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); t2.setAttribute("font-size", "12px"); t2.setAttribute("font-weight", "bold"); t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
     }
     window.switchHub = function(n) { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
     window.addNewHub = function() { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
