@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v2.9</title>
+    <title>Windsor Hub v3.1</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
+        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         h2 { color: #ff8c00; margin: 0; font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
-        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
+        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; position: relative; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; }
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-        .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .donut-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); transition: background 0.4s; }
-        .chart-center { z-index: 10; pointer-events: none; }
-        .item-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+
+        /* 圓環容器與引線畫布 */
+        .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; transition: background 0.4s; cursor: pointer; }
+        .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        
+        .chart-center { z-index: 6; pointer-events: none; text-align: center; }
+        .center-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
         .center-val { font-size: 18px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
         
-        /* 明細表與單筆刪除按鈕 */
-        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; min-height: 20px; }
+        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; color: #aaa; border-bottom: 1px solid #1a1a1a; }
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
-        .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; transition: 0.2s; }
-        .item-del-btn:hover { background: rgba(255,49,49,0.1); border-color: #ff3131; }
+        .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
 
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
-        label { font-size: 10px; color: #888; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
+        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
     </style>
@@ -42,53 +43,56 @@
     <div class="orb-area">
         <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">SELECT</option></select>
-                <button class="del-x" onclick="deleteDate('A')">✕</button>
+                <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">SELECT</option></select>
+                <button class="del-x" onclick="window.deleteDate('A')">✕</button>
             </div>
         </div>
-        <div class="chart-container">
+        <div class="chart-container" id="containerA">
             <div id="ringA" class="donut-ring"></div>
-            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
+            <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
+            <div class="chart-center"><div class="center-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
         <div id="listA" class="detail-list"></div>
     </div>
 
     <div class="section">
-        <label>日期</label><input type="date" id="inputDate">
-        <label>項目名稱</label><input type="text" id="inputName" placeholder="例如：日本旅遊">
-        <label>類別金額</label>
+        <input type="date" id="inputDate">
+        <input type="text" id="inputName" placeholder="項目名稱 (例：日本旅遊)">
         <select id="inputCat">
             <option value="travel">旅遊類 (橘)</option>
             <option value="invest">投資類 (藍)</option>
             <option value="reserve">預備金 (灰)</option>
         </select>
-        <input type="number" id="inputAmt" placeholder="0.00">
-        <button class="main-btn" onclick="saveData()">數據存儲</button>
+        <input type="number" id="inputAmt" placeholder="金額">
+        <button class="main-btn" onclick="window.saveData()">數據存儲</button>
     </div>
 
     <div class="orb-area">
         <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">SELECT</option></select>
-                <button class="del-x" onclick="deleteDate('B')">✕</button>
+                <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">SELECT</option></select>
+                <button class="del-x" onclick="window.deleteDate('B')">✕</button>
             </div>
         </div>
-        <div class="chart-container">
+        <div class="chart-container" id="containerB">
             <div id="ringB" class="donut-ring"></div>
-            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
+            <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
+            <div class="chart-center"><div class="center-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v2.9 SELECTIVE DELETE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.1 FOCUS LEADS</div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem("windsorHub_v10") || "{}");
+    window.db = JSON.parse(localStorage.getItem("windsorHub_v12") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
+    // 儲存每個色塊的角度資訊，用於互動
+    let ringSectors = { A: [], B: [] };
 
-    function refreshSelectors() {
-        const dates = Object.keys(db).sort();
+    window.refreshSelectors = function() {
+        const dates = Object.keys(window.db).sort();
         ["selA", "selB"].forEach(id => {
             const el = document.getElementById(id);
             const cur = el.value;
@@ -97,55 +101,56 @@
                 const opt = document.createElement("option");
                 opt.value = d; opt.innerText = d; el.appendChild(opt);
             });
-            el.value = db[cur] ? cur : "";
+            el.value = window.db[cur] ? cur : "";
         });
     }
 
-    function saveData() {
+    window.saveData = function() {
         const d = document.getElementById("inputDate").value;
         const c = document.getElementById("inputCat").value;
         const n = document.getElementById("inputName").value || "未命名";
         const a = parseFloat(document.getElementById("inputAmt").value) || 0;
         if (!d) { alert("請選擇日期"); return; }
-        if (!db[d]) db[d] = [];
-        db[d].push({ cat: c, name: n, amt: a });
-        localStorage.setItem("windsorHub_v10", JSON.stringify(db));
-        refreshSelectors();
-        updateRing("A", document.getElementById("selA").value);
-        updateRing("B", document.getElementById("selB").value);
+        if (!window.db[d]) window.db[d] = [];
+        window.db[d].push({ cat: c, name: n, amt: a });
+        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        window.refreshSelectors();
+        window.updateRing("A", document.getElementById("selA").value);
+        window.updateRing("B", document.getElementById("selB").value);
     }
 
-    // 單筆刪除功能
     window.removeItem = function(date, index, ringId) {
         if (!confirm("確定移除此筆項目？")) return;
-        db[date].splice(index, 1);
-        if (db[date].length === 0) delete db[date]; // 如果當天沒項目了就刪除日期
-        localStorage.setItem("windsorHub_v10", JSON.stringify(db));
-        refreshSelectors();
-        updateRing("A", document.getElementById("selA").value);
-        updateRing("B", document.getElementById("selB").value);
+        window.db[date].splice(index, 1);
+        if (window.db[date].length === 0) delete window.db[date];
+        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        window.refreshSelectors();
+        window.updateRing("A", document.getElementById("selA").value);
+        window.updateRing("B", document.getElementById("selB").value);
     };
 
-    function deleteDate(id) {
+    window.deleteDate = function(id) {
         const d = document.getElementById("sel" + id).value;
         if (!d || !confirm("刪除整個 " + d + " 的數據？")) return;
-        delete db[d];
-        localStorage.setItem("windsorHub_v10", JSON.stringify(db));
-        refreshSelectors();
-        updateRing("A", ""); updateRing("B", "");
+        delete window.db[d];
+        localStorage.setItem("windsorHub_v12", JSON.stringify(window.db));
+        window.refreshSelectors();
+        window.updateRing("A", ""); window.updateRing("B", "");
     }
 
-    function updateRing(id, date) {
+    window.updateRing = function(id, date) {
         const valEl = document.getElementById("val" + id);
         const ringEl = document.getElementById("ring" + id);
         const listEl = document.getElementById("list" + id);
+        const svgEl = document.getElementById("leads" + id);
+        svgEl.innerHTML = ""; // 清空引線
+        ringSectors[id] = []; // 清空角度資訊
         
-        if (db[date]) {
-            const items = db[date];
+        if (window.db[date]) {
+            const items = window.db[date];
             const total = items.reduce((sum, i) => sum + i.amt, 0);
             valEl.innerText = "$ " + total.toLocaleString();
             
-            // 渲染明細並加入刪除按鈕
             listEl.innerHTML = items.map((i, idx) => `
                 <div class="detail-item">
                     <span>${i.name}</span>
@@ -158,10 +163,14 @@
 
             let currentDeg = 0;
             const gapDeg = 1.5; 
-            const gps = items.map(i => {
-                const p = (i.amt / total) * 360;
+            const gps = items.map((i, idx) => {
+                const pDeg = (i.amt / total) * 360;
                 const s = currentDeg;
-                const e = currentDeg + p;
+                const e = currentDeg + pDeg;
+                
+                // 儲存區塊資訊供點擊使用
+                ringSectors[id].push({ start: s, end: e, name: i.name, amt: i.amt, cat: i.cat });
+
                 currentDeg = e;
                 return `${colors[i.cat]} ${s}deg ${e - gapDeg}deg, transparent ${e - gapDeg}deg ${e}deg`;
             });
@@ -172,7 +181,111 @@
             listEl.innerHTML = "";
         }
     }
-    refreshSelectors();
+
+    // 處理圓環點擊/觸摸事件，拉出引線
+    function handleRingClick(e, id) {
+        const rect = e.target.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // 計算點擊位置相對於圓心的角度
+        let clickX, clickY;
+        if (e.touches) {
+            clickX = e.touches[0].clientX;
+            clickY = e.touches[0].clientY;
+        } else {
+            clickX = e.clientX;
+            clickY = e.clientY;
+        }
+
+        const dx = clickX - centerX;
+        const dy = clickY - centerY;
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90; // 轉換為 conic-gradient 角度
+        if (angle < 0) angle += 360;
+
+        // 尋找對應的區塊
+        const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
+        
+        if (sector) {
+            drawLeadLine(id, sector);
+        }
+    }
+
+    // 繪製引線與標籤
+    function drawLeadLine(id, sector) {
+        const svgEl = document.getElementById("leads" + id);
+        svgEl.innerHTML = ""; // 先清空之前的引線
+
+        // 計算區塊中心角度
+        const midDeg = sector.start + (sector.end - sector.start) / 2;
+        const rad = (midDeg - 90) * (Math.PI / 180);
+        
+        // 圓環半徑約為 90 (180/2)
+        const ringR = 90;
+        const svgCenter = 130; // 260/2
+        
+        // 引線起點 (圓環邊緣)
+        const x1 = svgCenter + ringR * Math.cos(rad);
+        const y1 = svgCenter + ringR * Math.sin(rad);
+        
+        // 引線轉折點 (向外延伸)
+        const breakR = 110;
+        const x2 = svgCenter + breakR * Math.cos(rad);
+        const y2 = svgCenter + breakR * Math.sin(rad);
+        
+        // 標籤終點 (水平延伸)
+        const labelR = 120;
+        const isRight = x2 > svgCenter;
+        const x3 = isRight ? svgCenter + labelR : svgCenter - labelR;
+        const y3 = y2; // 維持高度
+
+        const color = colors[sector.cat];
+
+        // 建立 SVG 引線 (折線)
+        const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        polyline.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
+        polyline.setAttribute("stroke", color);
+        polyline.setAttribute("stroke-width", "1");
+        polyline.setAttribute("fill", "none");
+        polyline.setAttribute("stroke-dasharray", "2,2"); // 戰術虛線
+        svgEl.appendChild(polyline);
+
+        // 建立標籤文字 (項目名稱)
+        const textName = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textName.setAttribute("x", x3);
+        textName.setAttribute("y", y3 - 5); // 文字在線上
+        textName.setAttribute("fill", color);
+        textName.setAttribute("font-size", "10px");
+        textName.setAttribute("font-weight", "bold");
+        textName.setAttribute("text-anchor", isRight ? "start" : "end");
+        textName.textContent = sector.name;
+        svgEl.appendChild(textName);
+
+        // 建立標籤文字 (金額)
+        const textAmt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textAmt.setAttribute("x", x3);
+        textAmt.setAttribute("y", y3 + 12); // 金額在線下
+        textAmt.setAttribute("fill", "#39ff14"); // 綠色金額
+        textAmt.setAttribute("font-size", "10px");
+        textAmt.setAttribute("text-anchor", isRight ? "start" : "end");
+        textAmt.textContent = `$ ${sector.amt.toLocaleString()}`;
+        svgEl.appendChild(textAmt);
+
+        // 3秒後自動消失，維持簡潔
+        setTimeout(() => {
+            if (svgEl.contains(polyline)) svgEl.removeChild(polyline);
+            if (svgEl.contains(textName)) svgEl.removeChild(textName);
+            if (svgEl.contains(textAmt)) svgEl.removeChild(textAmt);
+        }, 3000);
+    }
+
+    // 綁定事件
+    document.getElementById("ringA").addEventListener("click", (e) => handleRingClick(e, "A"));
+    document.getElementById("ringA").addEventListener("touchstart", (e) => handleRingClick(e, "A"));
+    document.getElementById("ringB").addEventListener("click", (e) => handleRingClick(e, "B"));
+    document.getElementById("ringB").addEventListener("touchstart", (e) => handleRingClick(e, "B"));
+
+    window.refreshSelectors();
 </script>
 </body>
 </html>
