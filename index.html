@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v3.2</title>
+    <title>Windsor Hub v3.3</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
@@ -29,14 +29,18 @@
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
 
+        /* 穩定版日期佈局：鎖死寬度 */
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
-        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
+        input, select { 
+            width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; 
+            border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; 
+            box-sizing: border-box; display: block; outline: none; -webkit-appearance: none; 
+        }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
     </style>
 </head>
-<body>
-<div class="container">
+<body onclick="clearLeads(event)"> <div class="container">
     <header><h2>WINDSOR HUB</h2></header>
     
     <div class="orb-area">
@@ -47,7 +51,7 @@
             </div>
         </div>
         <div class="chart-container">
-            <div id="ringA" class="donut-ring"></div>
+            <div id="ringA" class="donut-ring" onclick="event.stopPropagation()"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center"><div class="center-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
@@ -74,18 +78,18 @@
             </div>
         </div>
         <div class="chart-container">
-            <div id="ringB" class="donut-ring"></div>
+            <div id="ringB" class="donut-ring" onclick="event.stopPropagation()"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
             <div class="chart-center"><div class="center-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.2 FINAL STABLE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.3 MASTER STABLE</div>
 </div>
 
 <script>
-    window.db = JSON.parse(localStorage.getItem("windsorHub_v13") || "{}");
+    window.db = JSON.parse(localStorage.getItem("windsorHub_v14") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
     let ringSectors = { A: [], B: [] };
 
@@ -111,18 +115,18 @@
         if (!d) { alert("請選擇日期"); return; }
         if (!window.db[d]) window.db[d] = [];
         window.db[d].push({ cat: c, name: n, amt: a });
-        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v14", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", document.getElementById("selA").value);
         window.updateRing("B", document.getElementById("selB").value);
-        alert("數據存儲成功"); // 回歸提示
+        alert("數據存儲成功");
     }
 
     window.removeItem = function(date, index, ringId) {
         if (!confirm("確定移除此筆項目？")) return;
         window.db[date].splice(index, 1);
         if (window.db[date].length === 0) delete window.db[date];
-        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v14", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", document.getElementById("selA").value);
         window.updateRing("B", document.getElementById("selB").value);
@@ -132,7 +136,7 @@
         const d = document.getElementById("sel" + id).value;
         if (!d || !confirm("刪除整個 " + d + " 的數據？")) return;
         delete window.db[d];
-        localStorage.setItem("windsorHub_v13", JSON.stringify(window.db));
+        localStorage.setItem("windsorHub_v14", JSON.stringify(window.db));
         window.refreshSelectors();
         window.updateRing("A", ""); window.updateRing("B", "");
     }
@@ -159,7 +163,7 @@
             if (total === 0) { ringEl.style.background = "#222"; return; }
             let currentDeg = 0;
             const gapDeg = 1.5; 
-            const gps = items.map((i, idx) => {
+            const gps = items.map((i) => {
                 const pDeg = (i.amt / total) * 360;
                 const s = currentDeg;
                 const e = currentDeg + pDeg;
@@ -175,7 +179,14 @@
         }
     }
 
+    // 清除所有引線
+    window.clearLeads = function() {
+        document.getElementById("leadsA").innerHTML = "";
+        document.getElementById("leadsB").innerHTML = "";
+    }
+
     function handleRingClick(e, id) {
+        e.stopPropagation(); // 防止觸發 body 的點擊清除
         const rect = e.target.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -215,8 +226,6 @@
         t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR ? "start" : "end");
         t2.textContent = `$ ${sector.amt.toLocaleString()}`;
         svgEl.appendChild(t2);
-
-        setTimeout(() => { svgEl.innerHTML = ""; }, 3000);
     }
 
     ["ringA", "ringB"].forEach(rid => {
