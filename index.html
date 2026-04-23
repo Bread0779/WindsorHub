@@ -3,34 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v2.4</title>
+    <title>Windsor Hub v2.5</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 20px; margin: 0; overflow-x: hidden; }
-        .container { max-width: 400px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h2 { color: #ff8c00; margin: 0; font-size: 22px; letter-spacing: 3px; text-shadow: 0 0 10px rgba(255,140,0,0.5); }
+        body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
+        .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        h2 { color: #ff8c00; margin: 0; font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
         
-        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        /* 圓環區域 */
+        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 150px; }
-        .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
-        .del-x { background: #333; color: #888; border: none; padding: 5px 12px; font-size: 14px; cursor: pointer; transition: 0.3s; }
-        .del-x:hover { color: #ff3131; background: #444; }
+        .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; box-sizing: border-box; }
+        .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; width: 100%; }
+        .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
+        .del-x:hover { color: #ff3131; }
 
+        /* 厚圓環設定 */
         .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .donut-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 55%, black 56%); mask: radial-gradient(transparent 55%, black 56%); transition: background 0.5s ease; }
-        .chart-center { text-align: center; z-index: 10; }
-        .center-val { font-size: 20px; font-weight: bold; color: #39ff14; letter-spacing: 1px; }
+        .donut-ring { 
+            position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; 
+            /* 調整 48% 讓圓環變厚 */
+            -webkit-mask: radial-gradient(transparent 48%, black 49%); 
+            mask: radial-gradient(transparent 48%, black 49%); 
+            transition: background 0.5s ease; 
+        }
+        .center-val { font-size: 18px; font-weight: bold; color: #39ff14; z-index: 10; }
 
-        .section { background: #1a1a1a; padding: 25px; border-radius: 20px; margin: 20px 0; border: 1px solid #ff8c00; box-shadow: 0 0 20px rgba(255,140,0,0.1); }
+        /* 數據輸入區 - 穩定佈局 */
+        .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
         h4 { margin: 0 0 15px 0; font-size: 14px; color: #ff8c00; border-left: 3px solid #ff8c00; padding-left: 10px; }
-        label { font-size: 11px; color: #888; display: block; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 15px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: #ff8c00; }
+        label { font-size: 10px; color: #888; display: block; margin-bottom: 5px; }
         
-        .main-btn { width: 100%; padding: 16px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 15px; letter-spacing: 1px; transition: 0.2s; }
-        .main-btn:active { transform: scale(0.98); }
-        .footer { text-align: center; font-size: 9px; color: #444; margin: 30px 0; line-height: 1.6; }
+        /* 修正日期框不凸出的關鍵 CSS */
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            background: #262626; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 10px; 
+            margin-bottom: 12px; 
+            font-family: monospace; 
+            font-size: 14px; 
+            box-sizing: border-box; /* 確保 padding 不增加寬度 */
+            display: block;
+            outline: none;
+            -webkit-appearance: none; /* 移除行動端預設樣式 */
+        }
+        
+        .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
     </style>
 </head>
 <body>
@@ -42,7 +64,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:11px; color:#ff8c00">● 觀測環 A</span>
+            <span style="font-size:10px; color:#ff8c00">● 觀測環 A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="updateRing('A', this.value)">
                     <option value="">SELECT DATE</option>
@@ -52,9 +74,7 @@
         </div>
         <div class="chart-container">
             <div id="ringA" class="donut-ring"></div>
-            <div class="chart-center">
-                <div id="valA" class="center-val">$ 0</div>
-            </div>
+            <div id="valA" class="center-val">$ 0</div>
         </div>
     </div>
 
@@ -63,12 +83,12 @@
         <label>時空日期定義</label>
         <input type="date" id="inputDate">
         <label>項目說明</label>
-        <input type="text" id="inputName" placeholder="說明 (例：日本旅遊)">
+        <input type="text" id="inputName" placeholder="說明">
         <label>類別與金額</label>
         <select id="inputCat">
-            <option value="travel">旅遊類 (橘色)</option>
-            <option value="invest">投資類 (藍色)</option>
-            <option value="reserve">預備金 (灰色)</option>
+            <option value="travel">旅遊類 (橘)</option>
+            <option value="invest">投資類 (藍)</option>
+            <option value="reserve">預備金 (灰)</option>
         </select>
         <input type="number" id="inputAmt" placeholder="0.00">
         <button class="main-btn" onclick="saveData()">執行數據存儲</button>
@@ -76,7 +96,7 @@
 
     <div class="orb-area">
         <div class="orb-header">
-            <span style="font-size:11px; color:#ff8c00">● 觀測環 B</span>
+            <span style="font-size:10px; color:#ff8c00">● 觀測環 B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="updateRing('B', this.value)">
                     <option value="">SELECT DATE</option>
@@ -86,21 +106,18 @@
         </div>
         <div class="chart-container">
             <div id="ringB" class="donut-ring"></div>
-            <div class="chart-center">
-                <div id="valB" class="center-val">$ 0</div>
-            </div>
+            <div id="valB" class="center-val">$ 0</div>
         </div>
     </div>
 
     <div class="footer">
         © 2026 WINDSOR SHIELD ANALYTICS<br>
-        v2.4 STABLE GITHUB EDITION
+        v2.5 GITHUB MASTER EDITION
     </div>
 </div>
 
 <script>
-    // 初始化資料庫
-    let db = JSON.parse(localStorage.getItem("windsorHub_v4") || "{}");
+    let db = JSON.parse(localStorage.getItem("windsorHub_v5") || "{}");
     const colors = { travel: "#ff8c00", invest: "#00f3ff", reserve: "#888" };
 
     function refreshSelectors() {
@@ -114,39 +131,36 @@
                 opt.value = d; opt.innerText = d;
                 el.appendChild(opt);
             });
-            if (db[current]) el.value = current;
-            else el.value = "";
+            el.value = db[current] ? current : "";
         });
     }
 
     function saveData() {
         const d = document.getElementById("inputDate").value;
         const c = document.getElementById("inputCat").value;
-        const n = document.getElementById("inputName").value || "N/A";
         const a = parseFloat(document.getElementById("inputAmt").value) || 0;
 
-        if (!d) { alert("請選擇日期"); return; }
+        if (!d) { alert("請填寫日期"); return; }
         if (!db[d]) db[d] = [];
         
-        db[d].push({ cat: c, name: n, amt: a });
-        localStorage.setItem("windsorHub_v4", JSON.stringify(db));
+        db[d].push({ cat: c, amt: a });
+        localStorage.setItem("windsorHub_v5", JSON.stringify(db));
         
         refreshSelectors();
         updateRing("A", document.getElementById("selA").value);
         updateRing("B", document.getElementById("selB").value);
-        alert("數據已同步至日期：" + d);
+        alert("存儲成功");
     }
 
     function deleteDate(id) {
-        const el = document.getElementById("sel" + id);
-        const date = el.value;
+        const date = document.getElementById("sel" + id).value;
         if (!date) return;
-        if (confirm("確定刪除 " + date + " 的所有帳本？")) {
+        if (confirm("刪除 " + date + "?")) {
             delete db[date];
-            localStorage.setItem("windsorHub_v4", JSON.stringify(db));
+            localStorage.setItem("windsorHub_v5", JSON.stringify(db));
             refreshSelectors();
-            updateRing("A", document.getElementById("selA").value);
-            updateRing("B", document.getElementById("selB").value);
+            updateRing("A", "");
+            updateRing("B", "");
         }
     }
 
@@ -159,10 +173,7 @@
             const total = items.reduce((sum, i) => sum + i.amt, 0);
             valEl.innerText = "$ " + total.toLocaleString();
             
-            if (total === 0) {
-                ringEl.style.background = "#222";
-                return;
-            }
+            if (total === 0) { ringEl.style.background = "#222"; return; }
 
             let currentDeg = 0;
             const gradientParts = items.map(item => {
@@ -170,8 +181,8 @@
                 const start = currentDeg;
                 const end = currentDeg + p;
                 currentDeg = end;
-                // 加入 1% 的黑色間隙
-                return `${colors[item.cat]} ${start}% ${end - 1}%, #000 ${end - 1}% ${end}%`;
+                // 間隙縮小為 0.5%
+                return `${colors[item.cat]} ${start}% ${end - 0.5}%, #000 ${end - 0.5}% ${end}%`;
             });
             ringEl.style.background = `conic-gradient(${gradientParts.join(",")})`;
         } else {
@@ -179,8 +190,6 @@
             ringEl.style.background = "#222";
         }
     }
-
-    // 頁面加載後執行一次初始化
     refreshSelectors();
 </script>
 </body>
