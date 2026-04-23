@@ -3,53 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v6.0</title>
+    <title>Windsor Hub v6.1</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0B0B0B; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        /* 核心基底：極簡白與霧金 */
+        body { font-family: 'Courier New', monospace; background: #FFFFFF; color: #333; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         
         header { text-align: center; margin: 15px 0 25px 0; order: -3; }
-        h2 { color: #C6A15B; margin: 0; font-size: 24px; letter-spacing: 5px; text-shadow: 0 0 12px rgba(198,161,91,0.3); font-weight: 900; }
+        h2 { color: #C6A15B; margin: 0; font-size: 24px; letter-spacing: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 900; }
 
+        /* 帳本切換：淺灰霧面質感 */
         .hub-ctrl { 
-            background: linear-gradient(145deg, #0F1A2E, #0B0B0B);
+            background: #F8F8F8;
             border: none; border-bottom: 2px solid #C6A15B; border-radius: 12px; 
-            padding: 12px 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); order: -2; position: relative; z-index: 100;
+            padding: 10px 15px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); order: -2; position: relative; z-index: 100;
         }
-        .hub-select { background: transparent; border: none; color: #C6A15B; font-size: 15px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; letter-spacing: 1px; }
+        .hub-select { background: transparent; border: none; color: #C6A15B; font-size: 15px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
 
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 1px solid #C6A15B !important; }
         
-        .orb-area { background: rgba(15,26,46,0.4); border: 1px solid #1a1a1a; border-radius: 25px; padding: 25px; margin-bottom: 20px; text-align: center; }
+        /* 模組背景：極淺霧灰 */
+        .orb-area { background: #FCFCFC; border: 1px solid #EEE; border-radius: 25px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.03); }
         
-        /* 布局修正：左 A/B，右選單 */
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .orb-id { font-size: 24px; font-weight: 900; color: #C6A15B; text-shadow: 0 0 12px #C6A15B; }
+        .orb-id { font-size: 22px; font-weight: 900; color: #C6A15B; }
         
-        .time-ctrl { display: flex; background: #0B0B0B; border: 1px solid rgba(198,161,91,0.5); border-radius: 8px; overflow: hidden; width: 140px; }
-        .time-select { flex-grow: 1; background: transparent; border: none; color: #C6A15B; padding: 8px; font-size: 11px; outline: none; cursor: pointer; text-align: center; }
-        .del-x { background: #1a1a1a; color: #C6A15B; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; border-left: 1px solid rgba(198,161,91,0.3); }
+        /* 日期選單：精緻縮小版 */
+        .time-ctrl { display: flex; background: #FFF; border: 1px solid rgba(198,161,91,0.5); border-radius: 6px; overflow: hidden; width: 120px; }
+        .time-select { flex-grow: 1; background: transparent; border: none; color: #C6A15B; padding: 5px; font-size: 10px; outline: none; cursor: pointer; text-align: center; }
+        .del-x { background: #F5F5F5; color: #AAA; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid rgba(198,161,91,0.2); }
 
-        .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #0B0B0B; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
+        .chart-container { position: relative; width: 240px; height: 240px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #F0F0F0; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .chart-center { z-index: 6; text-align: center; pointer-events: none; }
-        .center-val { font-size: 20px; font-weight: bold; color: #C6A15B; text-shadow: 0 0 10px rgba(198,161,91,0.5); }
+        .center-val { font-size: 18px; font-weight: bold; color: #C6A15B; }
         
-        .detail-list { margin-top: 20px; text-align: left; font-size: 11px; border-top: 1px solid #1a1a1a; padding-top: 15px; }
-        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #151515; color: #888; }
-        .detail-item b { color: #eee; margin-left: auto; margin-right: 12px; }
-        .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
+        .detail-list { margin-top: 15px; text-align: left; font-size: 11px; border-top: 1px solid #EEE; padding-top: 15px; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F9F9F9; color: #666; }
+        .detail-item b { color: #333; margin-left: auto; margin-right: 10px; }
+        .item-del-btn { background: transparent; color: #FF4D4D; border: 1px solid #EEE; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
 
-        .section { background: #0F1A2E; padding: 25px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #1a1a1a; box-sizing: border-box; transition: box-shadow 0.3s; }
-        .edit-active { box-shadow: 0 0 25px rgba(198, 161, 91, 0.4); border: 1px solid #C6A15B !important; }
+        /* 輸入區佈局修正 */
+        .section { background: #FCFCFC; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #EEE; box-sizing: border-box; transition: box-shadow 0.3s; }
+        .edit-active { box-shadow: 0 0 20px rgba(198, 161, 91, 0.2); border: 1px solid #C6A15B !important; }
         
-        input, select { width: 100%; padding: 12px; background: #0B0B0B; border: 1px solid #222; color: #C6A15B; border-radius: 10px; margin-bottom: 12px; font-family: monospace; outline: none; }
-        .main-btn { width: 100%; padding: 15px; background: #C6A15B; color: #0B0B0B; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
-        .footer { text-align: center; font-size: 9px; color: #2a2a2a; margin: 30px 0; order: 100; }
-        .hub-btn { background: rgba(198,161,91,0.1); color: #C6A15B; border: 1px solid rgba(198,161,91,0.3); border-radius: 4px; padding: 5px 10px; margin-left: 8px; }
+        input, select { 
+            width: 100%; padding: 12px; background: #FFF; border: 1px solid #DDD; color: #333; 
+            border-radius: 10px; margin-bottom: 12px; font-family: monospace; outline: none;
+            box-sizing: border-box; display: block; /* 確保不溢出 */
+        }
+        .main-btn { width: 100%; padding: 15px; background: #C6A15B; color: #FFF; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
+        .footer { text-align: center; font-size: 9px; color: #AAA; margin: 30px 0; order: 100; }
+        .hub-btn { background: rgba(198,161,91,0.05); color: #C6A15B; border: 1px solid rgba(198,161,91,0.2); border-radius: 4px; padding: 5px 10px; margin-left: 8px; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
@@ -61,7 +68,7 @@
         <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
         <div style="display:flex">
             <button class="hub-btn" onclick="addNewHub()">＋</button>
-            <button class="hub-btn" style="color:#ff3131; border-color:rgba(255,49,49,0.3);" onclick="deleteCurrentHub()">🗑</button>
+            <button class="hub-btn" style="color:#FF4D4D; border-color:rgba(255,0,0,0.1);" onclick="deleteCurrentHub()">🗑</button>
         </div>
     </div>
     
@@ -76,7 +83,7 @@
         <div class="chart-container">
             <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 260 260"></svg>
-            <div class="chart-center"><div style="font-size:9px;color:#444">資產總額</div><div id="valA" class="center-val">$ 0</div></div>
+            <div class="chart-center"><div style="font-size:8px;color:#999">資產總額</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
         <div id="listA" class="detail-list"></div>
     </div>
@@ -107,27 +114,18 @@
         <div class="chart-container">
             <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 260 260"></svg>
-            <div class="chart-center"><div style="font-size:9px;color:#444">資產總額</div><div id="valB" class="center-val">$ 0</div></div>
+            <div class="chart-center"><div style="font-size:8px;color:#999">資產總額</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V6.0 LUXURY EARTH GOLD</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V6.1 QUIET LUXURY WHITE</div>
 </div>
 
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
-    
-    // 🛡️ 總裁自定義大地金配色方案
-    const colors = { 
-        travel: "#9c7c43",      // 旅遊 (焦糖金)
-        savings: "#c4b474",     // 存款 (麥田金)
-        cash: "#604c14",        // 活存 (古銅金)
-        invest: "#9d8857",      // 投資 (流沙金)
-        uninvested: "#cdc7b6"   // 待投資 (象牙白)
-    };
-
+    const colors = { travel: "#9c7c43", savings: "#c4b474", cash: "#604c14", invest: "#9d8857", uninvested: "#cdc7b6" };
     let ringSectors = { A: [], B: [] }, editMode = { active: false, date: null, index: -1 };
 
     function initDraggable() {
@@ -219,17 +217,17 @@
             valEl.innerText = "$ " + total.toLocaleString();
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px">${i.name}</span><b style="color:${i.amt>=i.cost?'#39ff14':'#ff3131'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px">${i.name}</span><b style="color:${i.amt>=i.cost?'#28A745':'#DC3545'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
-            if (total === 0) { ringEl.style.background = "#0B0B0B"; return; }
+            if (total === 0) { ringEl.style.background = "#F0F0F0"; return; }
             let curD = 0; const blackLineDeg = 0.8;
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / total) * 360, s = curD, e = curD + p; curD = e;
                 ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, cat: i.cat, hasNow: i.hasNow, idx, date });
-                let color = (i.hasNow && i.amt < i.cost) ? "#222" : (colors[i.cat] || "#C6A15B");
-                return `${color} ${s}deg ${e - blackLineDeg}deg, #000 ${e - blackLineDeg}deg ${e}deg`;
+                let color = (i.hasNow && i.amt < i.cost) ? "#DDD" : (colors[i.cat] || "#C6A15B");
+                return `${color} ${s}deg ${e - blackLineDeg}deg, #FFF ${e - blackLineDeg}deg ${e}deg`;
             }).join(",")})`;
-        } else { valEl.innerText = "$ 0"; ringEl.style.background = "#0B0B0B"; listEl.innerHTML = ""; }
+        } else { valEl.innerText = "$ 0"; ringEl.style.background = "#F0F0F0"; listEl.innerHTML = ""; }
     }
 
     function drawLead(id, sector) {
@@ -238,17 +236,17 @@
         const rad = (mid - 90) * (Math.PI / 180);
         const x1 = 130 + 90 * Math.cos(rad), y1 = 130 + 90 * Math.sin(rad), x2 = 130 + 110 * Math.cos(rad), y2 = 130 + 110 * Math.sin(rad);
         const isR = x2 > 130, x3 = isR ? 250 : 10, y3 = y2;
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#555" : (colors[sector.cat] || "#C6A15B");
+        const color = (sector.hasNow && sector.amt < sector.cost) ? "#BBB" : (colors[sector.cat] || "#C6A15B");
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3}`);
         line.setAttribute("stroke", color); line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "2,2");
         svg.appendChild(line);
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", x3); t1.setAttribute("y", y3-5); t1.setAttribute("fill", color); t1.setAttribute("font-size", "10px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", isR?"end":"start");
+        t1.setAttribute("x", x3); t1.setAttribute("y", y3-5); t1.setAttribute("fill", "#333"); t1.setAttribute("font-size", "10px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", isR?"end":"start");
         t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", x3); t2.setAttribute("y", y3+12); t2.setAttribute("fill", sector.amt>=sector.cost?"#39ff14":"#ff3131"); t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR?"end":"start");
+        t2.setAttribute("x", x3); t2.setAttribute("y", y3+12); t2.setAttribute("fill", sector.amt>=sector.cost?"#28A745":"#DC3545"); t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isR?"end":"start");
         t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
     }
 
