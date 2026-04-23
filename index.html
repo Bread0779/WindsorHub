@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v3.3</title>
+    <title>Windsor Hub v3.4</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
@@ -29,7 +29,6 @@
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
 
-        /* 穩定版日期佈局：鎖死寬度 */
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
         input, select { 
             width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; 
@@ -47,7 +46,7 @@
         <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">SELECT</option></select>
-                <button class="del-x" onclick="window.deleteDate('A')">✕</button>
+                <button class="del-x" onclick="deleteDate('A')">✕</button>
             </div>
         </div>
         <div class="chart-container">
@@ -74,7 +73,7 @@
         <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">SELECT</option></select>
-                <button class="del-x" onclick="window.deleteDate('B')">✕</button>
+                <button class="del-x" onclick="deleteDate('B')">✕</button>
             </div>
         </div>
         <div class="chart-container">
@@ -85,7 +84,7 @@
         <div id="listB" class="detail-list"></div>
     </div>
 
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.3 MASTER STABLE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v3.4 BLACK-LINE EDITION</div>
 </div>
 
 <script>
@@ -138,7 +137,7 @@
         delete window.db[d];
         localStorage.setItem("windsorHub_v14", JSON.stringify(window.db));
         window.refreshSelectors();
-        window.updateRing("A", ""); window.updateRing("B", "");
+        updateRing("A", ""); window.updateRing("B", "");
     }
 
     window.updateRing = function(id, date) {
@@ -162,14 +161,16 @@
 
             if (total === 0) { ringEl.style.background = "#222"; return; }
             let currentDeg = 0;
-            const gapDeg = 1.5; 
+            // 黑線寬度：調粗為 2deg，讓它更明顯
+            const blackLineDeg = 2.0; 
             const gps = items.map((i) => {
                 const pDeg = (i.amt / total) * 360;
                 const s = currentDeg;
                 const e = currentDeg + pDeg;
                 ringSectors[id].push({ start: s, end: e, name: i.name, amt: i.amt, cat: i.cat });
                 currentDeg = e;
-                return `${colors[i.cat]} ${s}deg ${e - gapDeg}deg, transparent ${e - gapDeg}deg ${e}deg`;
+                // 從「Transparent 間隙」改為「#000 實心黑線」
+                return `${colors[i.cat]} ${s}deg ${e - blackLineDeg}deg, #000 ${e - blackLineDeg}deg ${e}deg`;
             });
             ringEl.style.background = `conic-gradient(${gps.join(",")})`;
         } else {
