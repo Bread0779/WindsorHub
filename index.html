@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v10.7</title>
+    <title>Windsor Hub v10.8</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -31,11 +31,14 @@
         .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
         .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
-        input { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
         
-        /* 🛡️ 最終校正：種類選單文字全面白化 */
-        #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF !important; border-radius: 12px; margin-bottom: 12px; outline: none; box-sizing: border-box; }
-        #inputCat option { color: #FFF !important; background: #000 !important; }
+        /* 🛡️ 最終校正：日曆圖標白化 (Invert) */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        input, #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
+        #inputCat { color: #FFF !important; }
 
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0; order: 100; }
@@ -100,13 +103,21 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.7 FINAL BORDER LOCK</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.8 SMART FORMAT</div>
 </div>
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
     const colors = { travel: "#2F353B", savings: "#C0C0C0", cash: "#1A1A1B", invest: "#F8F9FA", uninvested: "#47586B" };
     let ringSectors = { A: [], B: [] }, editMode = { active: false, date: null, index: -1 };
+
+    // 🛡️ 智能金額格式化：萬位轉換邏輯
+    function fmtAmt(val) {
+        if (Math.abs(val) >= 10000) {
+            return (val / 10000).toFixed(val % 10000 === 0 ? 0 : 1) + "萬";
+        }
+        return val.toLocaleString();
+    }
 
     function initDraggable() {
         document.querySelectorAll('.draggable-mod').forEach(d => {
@@ -182,10 +193,10 @@
         const db = hubs[currentHubName];
         if (db[date]) {
             const items = db[date], total = items.reduce((sum, i) => sum + i.amt, 0);
-            valEl.innerText = "$ " + total.toLocaleString();
+            valEl.innerText = "$ " + fmtAmt(total);
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${fmtAmt(i.amt)}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
             if (total === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
@@ -226,7 +237,7 @@
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 12); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
-        t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
+        t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${fmtAmt(sector.amt)} ${perf}`; svg.appendChild(t2);
     }
     window.switchHub = function(n) { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
     window.addNewHub = function() { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
