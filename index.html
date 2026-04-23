@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v10.6</title>
+    <title>Windsor Hub v10.7</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -11,7 +11,7 @@
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
-        select option { background: #000 !important; color: #FFF; }
+        select option { background: #000 !important; color: #FFF !important; }
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
@@ -25,24 +25,17 @@
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .chart-center { z-index: 6; text-align: center; pointer-events: none; }
         .center-val { font-size: 24px; font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); } 
-        
-        /* 🛡️ 修復：隱藏滾動條但保留功能 */
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none; }
+        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
         .detail-list::-webkit-scrollbar { display: none; }
-        
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
         .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
         .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
         input { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
         
-        /* 🛡️ 下拉種類顏色校準 */
-        #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; outline: none; box-sizing: border-box; }
-        #inputCat option[value="travel"] { color: #2F353B; }
-        #inputCat option[value="savings"] { color: #C0C0C0; }
-        #inputCat option[value="cash"] { color: #1A1A1B; }
-        #inputCat option[value="invest"] { color: #F8F9FA; }
-        #inputCat option[value="uninvested"] { color: #47586B; }
+        /* 🛡️ 最終校正：種類選單文字全面白化 */
+        #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF !important; border-radius: 12px; margin-bottom: 12px; outline: none; box-sizing: border-box; }
+        #inputCat option { color: #FFF !important; background: #000 !important; }
 
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0; order: 100; }
@@ -79,7 +72,7 @@
     <div class="draggable-mod section" id="modInput" draggable="true" onclick="event.stopPropagation()">
         <input type="date" id="inputDate">
         <input type="text" id="inputName" placeholder="項目名稱">
-        <select id="inputCat" onchange="this.style.color = colors[this.value]">
+        <select id="inputCat">
             <option value="travel">旅遊</option>
             <option value="savings">存款</option>
             <option value="cash">活存</option>
@@ -107,7 +100,7 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.6 STEALTH SCROLL</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V10.7 FINAL BORDER LOCK</div>
 </div>
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
@@ -179,7 +172,6 @@
             document.getElementById("inputDate").value = sector.date;
             document.getElementById("inputName").value = sector.name;
             document.getElementById("inputCat").value = sector.cat;
-            document.getElementById("inputCat").style.color = colors[sector.cat];
             document.getElementById("inputAmt").value = sector.cost;
             document.getElementById("inputNow").value = sector.hasNow ? sector.amt : "";
         }
