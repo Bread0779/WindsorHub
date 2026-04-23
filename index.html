@@ -3,27 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v11.2</title>
+    <title>Windsor Hub v11.3</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin: 20px 0 35px 0; order: -3; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
-        
-        .hub-select, .time-select, #inputCat { 
-            background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1;
-            -webkit-appearance: none; appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
-        }
-
+        .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
+        select option { background: #000 !important; color: #FFF !important; }
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
+        
+        /* 🛡️ 恢復經典穩定版日期選單 */
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
+        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
@@ -33,17 +30,18 @@
         .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); white-space: nowrap; } 
         
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
+        .detail-list::-webkit-scrollbar { display: none; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
         .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
-        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
         
+        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         input, #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
         
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         
-        /* 🛡️ 固定底部同步區 */
+        /* 🛡️ 固定底部同步區：位置交換校準 */
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; letter-spacing: 1px; min-width: 100px; transition: 0.2s; }
         .gate-btn:active { background: #FFF; color: #000; }
@@ -114,12 +112,12 @@
         <div id="listB" class="detail-list"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V11.2 SYNC GATE ACTIVE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V11.3 SYNC GATE CALIBRATED</div>
 </div>
 
 <div class="sync-gate">
-    <button class="gate-btn" onclick="exportData()">數據出口 (EXPORT)</button>
     <button class="gate-btn" onclick="importData()">數據入口 (IMPORT)</button>
+    <button class="gate-btn" onclick="exportData()">數據出口 (EXPORT)</button>
 </div>
 
 <script>
@@ -135,31 +133,30 @@
     }
     function fmtComma(val) { return (parseFloat(val) || 0).toLocaleString(); }
 
-    // 🛡️ 方案 B 核心邏輯
     window.exportData = function() {
         const dataStr = JSON.stringify(hubs);
-        const encoded = btoa(unescape(encodeURIComponent(dataStr))); // 轉為 Base64 字串方便複製
+        const encoded = btoa(unescape(encodeURIComponent(dataStr)));
         const dummy = document.createElement("textarea");
         document.body.appendChild(dummy);
         dummy.value = encoded;
         dummy.select();
         document.execCommand("copy");
         document.body.removeChild(dummy);
-        alert("數據代碼已複製到剪貼簿！請將它貼到 LINE 或記事本儲存。");
+        alert("數據代碼已複製！請貼到 LINE 儲存。");
     }
 
     window.importData = function() {
-        const code = prompt("請貼入您的數據代碼 (EXPORT 出來的文字):");
+        const code = prompt("請貼入您的數據代碼:");
         if (code) {
             try {
                 const decoded = decodeURIComponent(escape(atob(code)));
                 const parsed = JSON.parse(decoded);
-                if (confirm("這將覆蓋目前的所有帳本數據，確定嗎？")) {
+                if (confirm("即將覆蓋現有數據，確定？")) {
                     hubs = parsed;
                     localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-                    location.reload(); // 重新載入以套用
+                    location.reload();
                 }
-            } catch (e) { alert("無效的數據代碼，請重新檢查。"); }
+            } catch (e) { alert("代碼無效。"); }
         }
     }
 
@@ -209,6 +206,7 @@
     }
     function exitEditMode() {
         editMode = { active: false, date: null, index: -1 };
+        document.getElementById("modInput").classList.remove("edit-active");
         document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = "";
     }
     window.clearLeads = function() { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); }
@@ -223,6 +221,7 @@
         if (sector) {
             drawLead(id, sector);
             editMode = { active: true, date: sector.date, index: sector.idx };
+            document.getElementById("modInput").classList.add("edit-active");
             document.getElementById("inputDate").value = sector.date;
             document.getElementById("inputName").value = sector.name;
             document.getElementById("inputCat").value = sector.cat;
@@ -265,6 +264,7 @@
         const isRightSide = x2 >= centerX;
         if (Math.abs(Math.cos(rad)) < 0.5) { x2 = centerX + (isRightSide ? 90 : -90); }
         const xLabel = isRightSide ? 330 : 10;
+        const yLabel = y2;
         const anchor = isRightSide ? "end" : "start";
         const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
