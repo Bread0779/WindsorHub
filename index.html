@@ -3,15 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v5.1</title>
+    <title>Windsor Hub v5.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
-        .hub-ctrl { background: #111; border: 1px solid #ff8c00; border-radius: 15px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 0 15px rgba(255,140,0,0.1); order: -2; position: relative; z-index: 100; }
-        .hub-select { background: transparent; border: none; color: #ff8c00; font-size: 14px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
-        .hub-btn { background: #222; color: #ff8c00; border: 1px solid #ff8c00; border-radius: 6px; padding: 4px 8px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; order: -1; }
-        h2 { color: #ff8c00; margin: 0; font-size: 18px; letter-spacing: 2px; }
+        
+        /* 標題中心化 */
+        header { text-align: center; margin: 10px 0 25px 0; order: -3; }
+        h2 { color: #ff8c00; margin: 0; font-size: 24px; letter-spacing: 5px; text-shadow: 0 0 15px rgba(255,140,0,0.5); font-weight: 900; }
+
+        /* 帳本切換中樞：美化版 */
+        .hub-ctrl { 
+            background: linear-gradient(180deg, rgba(34,34,34,1) 0%, rgba(17,17,17,1) 100%);
+            border: none;
+            border-bottom: 2px solid #ff8c00;
+            border-radius: 12px; 
+            padding: 12px 20px; 
+            margin-bottom: 30px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            order: -2; 
+            position: relative; 
+            z-index: 100;
+        }
+        .hub-select { 
+            background: transparent; 
+            border: none; 
+            color: #ff8c00; 
+            font-size: 15px; 
+            font-weight: bold; 
+            outline: none; 
+            cursor: pointer; 
+            flex-grow: 1;
+            letter-spacing: 1px;
+        }
+        .hub-btn { 
+            background: rgba(255,140,0,0.1); 
+            color: #ff8c00; 
+            border: 1px solid rgba(255,140,0,0.3); 
+            border-radius: 4px; 
+            padding: 5px 10px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            margin-left: 8px;
+            transition: 0.3s;
+        }
+        .hub-btn:active { background: #ff8c00; color: black; }
+
+        /* 模組與樣式維持 */
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px dashed #ff8c00 !important; }
         .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
@@ -20,6 +61,7 @@
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
+
         .chart-container { position: relative; width: 260px; height: 260px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
@@ -29,9 +71,10 @@
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
         .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
         .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; }
+        
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #ff8c00; box-sizing: border-box; transition: box-shadow 0.3s; }
         .edit-active { box-shadow: 0 0 20px rgba(255, 140, 0, 0.6); border: 1px solid #fff !important; }
-        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; }
+        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; outline: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; position: relative; z-index: 20; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; order: 100; }
     </style>
@@ -39,15 +82,19 @@
 <body onclick="clearLeads(event)">
 
 <div class="container" id="modContainer">
+    <header><h2>WINDSOR HUB</h2></header>
+
     <div class="hub-ctrl">
         <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
-        <button class="hub-btn" onclick="addNewHub()">＋帳本</button>
-        <button class="hub-btn" style="color:#ff3131; border-color:#ff3131;" onclick="deleteCurrentHub()">🗑</button>
+        <div style="display:flex">
+            <button class="hub-btn" onclick="addNewHub()">＋</button>
+            <button class="hub-btn" style="color:#ff3131; border-color:rgba(255,49,49,0.3);" onclick="deleteCurrentHub()">🗑</button>
+        </div>
     </div>
-    <header><h2>WINDSOR HUB</h2></header>
     
     <div class="draggable-mod orb-area" id="modA" draggable="true">
-        <div class="orb-header"><span class="orb-id">● A</span>
+        <div class="orb-header">
+            <span class="orb-id">● A</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('A')">✕</button>
@@ -75,7 +122,8 @@
     </div>
 
     <div class="draggable-mod orb-area" id="modB" draggable="true">
-        <div class="orb-header"><span class="orb-id">● B</span>
+        <div class="orb-header">
+            <span class="orb-id">● B</span>
             <div class="time-ctrl">
                 <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">SELECT</option></select>
                 <button class="del-x" onclick="deleteDate('B')">✕</button>
@@ -88,6 +136,8 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
+
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v5.2 SYMMETRY DESIGN</div>
 </div>
 
 <script>
@@ -137,11 +187,9 @@
         const cost = safeEval(document.getElementById("inputAmt").value) || 0;
         const nowValStr = document.getElementById("inputNow").value;
         const current = nowValStr ? safeEval(nowValStr) : cost;
-        const hasNow = nowValStr !== ""; // 關鍵修正：確保重新存檔時正確判定監控狀態
-
+        const hasNow = nowValStr !== "";
         if (!d) { alert("請選擇日期"); return; }
         if (!hubs[currentHubName][d]) hubs[currentHubName][d] = [];
-
         const entry = { cat: c, name: n, cost, amt: current, hasNow };
         if (editMode.active && editMode.date === d && editMode.index > -1) {
             hubs[currentHubName][d][editMode.index] = entry;
@@ -236,7 +284,7 @@
     }
 
     window.switchHub = function(name) { currentHubName = name; localStorage.setItem("windsorActiveHub", name); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
-    window.addNewHub = function() { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
+    window.addNewHub = function() { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
     window.deleteCurrentHub = function() { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = function(d, i, rid) { if (confirm("移除？")) { hubs[currentHubName][d].splice(i, 1); if (hubs[currentHubName][d].length === 0) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); window.updateRing("A", document.getElementById("selA").value); window.updateRing("B", document.getElementById("selB").value); } };
     window.deleteDate = function(id) { const d = document.getElementById("sel" + id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); window.updateRing("A", ""); window.updateRing("B", ""); } };
@@ -245,6 +293,7 @@
         ["selA", "selB"].forEach(id => { const el = document.getElementById(id); const cur = el.value; el.innerHTML = "<option value=''>SELECT</option>"; dates.forEach(d => { const opt = document.createElement("option"); opt.value = d; opt.innerText = d; el.appendChild(opt); }); el.value = hubs[currentHubName][cur] ? cur : ""; });
     }
     function initHubUI() { const s = document.getElementById("hubSelector"); s.innerHTML = ""; Object.keys(hubs).forEach(n => { const o = document.createElement("option"); o.value = n; o.innerText = n; if (n === currentHubName) o.selected = true; s.appendChild(o); }); refreshSelectors(); }
+    
     initDraggable(); loadOrder(); initHubUI();
 </script>
 </body>
