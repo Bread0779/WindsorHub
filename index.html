@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v9.5</title>
+    <title>Windsor Hub v9.7</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #EEE; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin: 20px 0 35px 0; order: -3; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.6); }
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FF8C00; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 0 20px rgba(255,140,0,0.2); order: -2; position: relative; z-index: 100; }
-        .hub-select { background: transparent; border: none; color: #FF8C00; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; text-shadow: 0 0 5px rgba(255,140,0,0.5); }
+        .hub-select { background: transparent; border: none; color: #FF8C00; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FF8C00 !important; }
         .orb-area { background: #000; border: 2px solid #FF8C00; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: inset 0 0 15px rgba(255,140,0,0.1); }
@@ -101,7 +101,7 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V9.5 AUTOMOTIVE ENGINEERING</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V9.7 FINAL STABLE</div>
 </div>
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
@@ -203,22 +203,29 @@
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        const centerX = 130, centerY = 105, r1 = 95, r2 = 125;
-        const x1 = centerX + r1 * Math.cos(rad), y1 = centerY + r1 * Math.sin(rad);
-        const x2 = centerX + r2 * Math.cos(rad), y2 = centerY + r2 * Math.sin(rad);
-        const isRight = x2 >= centerX, xL = isRight ? 265 : 5;
+        const centerX = 130, centerY = 105, rStart = 95, rExt = 125;
+        const x1 = centerX + rStart * Math.cos(rad), y1 = centerY + rStart * Math.sin(rad);
+        let x2 = centerX + rExt * Math.cos(rad), y2 = centerY + rExt * Math.sin(rad);
+        const cosVal = Math.cos(rad);
+        if (Math.abs(cosVal) < 0.3) { x2 = centerX + (cosVal >= 0 ? 60 : -60); }
+        const isRightSide = x2 >= centerX, xLabel = isRightSide ? 250 : 10, yLabel = y2;
         const color = (sector.hasNow && sector.amt < sector.cost) ? "#222" : colors[sector.cat];
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xL},${y2}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1");
+        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${yLabel}`);
+        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
+        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1");
         svg.appendChild(line);
+        const anchor = isRightSide ? "end" : "start";
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xL); t1.setAttribute("y", y2-8); t1.setAttribute("fill", "#FFFFFF"); t1.setAttribute("font-size", "16px"); t1.setAttribute("font-weight", "bold"); t1.setAttribute("text-anchor", isRight?"end":"start");
-        t1.textContent = sector.name; svg.appendChild(t1);
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", yLabel - 8); t1.setAttribute("fill", "#FFFFFF"); 
+        t1.setAttribute("font-size", "15px"); t1.setAttribute("font-weight", "bold"); 
+        t1.setAttribute("text-anchor", anchor); t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const p = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", xL); t2.setAttribute("y", y2+16); t2.setAttribute("fill", sector.amt>=sector.cost?"#39FF14":"#FF003C"); t2.setAttribute("font-size", "12px"); t2.setAttribute("font-weight", "bold"); t2.setAttribute("text-anchor", isRight?"end":"start");
-        t2.textContent = `$ ${sector.amt.toLocaleString()} ${p}`; svg.appendChild(t2);
+        const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
+        t2.setAttribute("x", xLabel); t2.setAttribute("y", yLabel + 16); 
+        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
+        t2.setAttribute("font-size", "12px"); t2.setAttribute("font-weight", "bold"); 
+        t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${sector.amt.toLocaleString()} ${perf}`; svg.appendChild(t2);
     }
     window.switchHub = function(n) { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
     window.addNewHub = function() { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
