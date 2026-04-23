@@ -6,32 +6,30 @@
     <title>Windsor Hub v2.9</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #0d0d0d; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
-        .container { max-width: 400px; margin: 0 auto; box-sizing: border-box; }
+        .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         h2 { color: #ff8c00; margin: 0; font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,140,0,0.3); }
-        
-        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 20px; text-align: center; position: relative; }
-        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .orb-area { background: rgba(255,140,0,0.03); border: 1px solid #222; border-radius: 25px; padding: 20px; margin-bottom: 15px; text-align: center; }
+        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #ff8c00; text-shadow: 0 0 12px #ff8c00; }
         .time-ctrl { display: flex; background: #222; border: 1px solid #ff8c00; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: transparent; border: none; color: #ff8c00; padding: 6px; font-size: 11px; outline: none; cursor: pointer; }
         .del-x { background: #333; color: #888; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; }
-
-        /* 圓環與引線容器 */
-        .visual-wrapper { position: relative; width: 100%; height: 220px; display: flex; justify-content: center; align-items: center; }
-        .chart-container { position: relative; width: 160px; height: 160px; z-index: 5; }
-        .donut-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); }
-        .chart-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center; pointer-events: none; }
-        .center-val { font-size: 16px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-
-        /* 引線標籤樣式 */
-        .callout { position: absolute; font-size: 9px; color: #aaa; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-start; pointer-events: none; width: 80px; }
-        .callout b { color: #ff8c00; font-size: 10px; border-bottom: 1px solid #ff8c00; margin-bottom: 2px; width: 100%; text-align: left; }
-        .callout-left { left: 0; text-align: left; }
-        .callout-right { right: 0; text-align: right; align-items: flex-end; }
-        .callout-right b { text-align: right; }
+        .chart-container { position: relative; width: 180px; height: 180px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        .donut-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #222; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); transition: background 0.4s; }
+        .chart-center { z-index: 10; pointer-events: none; }
+        .item-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+        .center-val { font-size: 18px; font-weight: bold; color: #39ff14; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+        
+        /* 明細表與單筆刪除按鈕 */
+        .detail-list { margin-top: 15px; text-align: left; font-size: 10px; border-top: 1px dashed #333; padding-top: 10px; min-height: 20px; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; color: #aaa; border-bottom: 1px solid #1a1a1a; }
+        .detail-item b { color: #fff; margin-left: auto; margin-right: 10px; }
+        .item-del-btn { background: transparent; color: #ff3131; border: 1px solid #444; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 10px; transition: 0.2s; }
+        .item-del-btn:hover { background: rgba(255,49,49,0.1); border-color: #ff3131; }
 
         .section { background: #1a1a1a; padding: 20px; border-radius: 20px; margin: 15px 0; border: 1px solid #ff8c00; box-sizing: border-box; }
+        label { font-size: 10px; color: #888; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 12px; font-family: monospace; font-size: 14px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
         .main-btn { width: 100%; padding: 15px; background: #ff8c00; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .footer { text-align: center; font-size: 8px; color: #444; margin: 25px 0; }
@@ -48,23 +46,21 @@
                 <button class="del-x" onclick="deleteDate('A')">✕</button>
             </div>
         </div>
-        <div class="visual-wrapper">
-            <div id="labelsA_L" class="callout callout-left"></div>
-            <div class="chart-container">
-                <div id="ringA" class="donut-ring"></div>
-                <div class="chart-center"><div id="valA" class="center-val">$ 0</div></div>
-            </div>
-            <div id="labelsA_R" class="callout callout-right"></div>
+        <div class="chart-container">
+            <div id="ringA" class="donut-ring"></div>
+            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valA" class="center-val">$ 0</div></div>
         </div>
+        <div id="listA" class="detail-list"></div>
     </div>
 
     <div class="section">
-        <input type="date" id="inputDate">
-        <input type="text" id="inputName" placeholder="說明 (例: 日本旅遊)">
+        <label>日期</label><input type="date" id="inputDate">
+        <label>項目名稱</label><input type="text" id="inputName" placeholder="例如：日本旅遊">
+        <label>類別金額</label>
         <select id="inputCat">
-            <option value="travel">旅遊 (橘)</option>
-            <option value="invest">投資 (藍)</option>
-            <option value="reserve">預備 (灰)</option>
+            <option value="travel">旅遊類 (橘)</option>
+            <option value="invest">投資類 (藍)</option>
+            <option value="reserve">預備金 (灰)</option>
         </select>
         <input type="number" id="inputAmt" placeholder="0.00">
         <button class="main-btn" onclick="saveData()">數據存儲</button>
@@ -77,16 +73,14 @@
                 <button class="del-x" onclick="deleteDate('B')">✕</button>
             </div>
         </div>
-        <div class="visual-wrapper">
-            <div id="labelsB_L" class="callout callout-left"></div>
-            <div class="chart-container">
-                <div id="ringB" class="donut-ring"></div>
-                <div class="chart-center"><div id="valB" class="center-val">$ 0</div></div>
-            </div>
-            <div id="labelsB_R" class="callout callout-right"></div>
+        <div class="chart-container">
+            <div id="ringB" class="donut-ring"></div>
+            <div class="chart-center"><div class="item-label">TOTAL</div><div id="valB" class="center-val">$ 0</div></div>
         </div>
+        <div id="listB" class="detail-list"></div>
     </div>
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v2.9 CALLOUT SYSTEM</div>
+
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>v2.9 SELECTIVE DELETE</div>
 </div>
 
 <script>
@@ -96,17 +90,23 @@
     function refreshSelectors() {
         const dates = Object.keys(db).sort();
         ["selA", "selB"].forEach(id => {
-            const el = document.getElementById(id), cur = el.value;
+            const el = document.getElementById(id);
+            const cur = el.value;
             el.innerHTML = "<option value=''>SELECT</option>";
-            dates.forEach(d => { const o = document.createElement("option"); o.value = d; o.innerText = d; el.appendChild(o); });
+            dates.forEach(d => {
+                const opt = document.createElement("option");
+                opt.value = d; opt.innerText = d; el.appendChild(opt);
+            });
             el.value = db[cur] ? cur : "";
         });
     }
 
     function saveData() {
-        const d = document.getElementById("inputDate").value, c = document.getElementById("inputCat").value,
-              n = document.getElementById("inputName").value || "N/A", a = parseFloat(document.getElementById("inputAmt").value) || 0;
-        if (!d) return;
+        const d = document.getElementById("inputDate").value;
+        const c = document.getElementById("inputCat").value;
+        const n = document.getElementById("inputName").value || "未命名";
+        const a = parseFloat(document.getElementById("inputAmt").value) || 0;
+        if (!d) { alert("請選擇日期"); return; }
         if (!db[d]) db[d] = [];
         db[d].push({ cat: c, name: n, amt: a });
         localStorage.setItem("windsorHub_v10", JSON.stringify(db));
@@ -115,31 +115,61 @@
         updateRing("B", document.getElementById("selB").value);
     }
 
+    // 單筆刪除功能
+    window.removeItem = function(date, index, ringId) {
+        if (!confirm("確定移除此筆項目？")) return;
+        db[date].splice(index, 1);
+        if (db[date].length === 0) delete db[date]; // 如果當天沒項目了就刪除日期
+        localStorage.setItem("windsorHub_v10", JSON.stringify(db));
+        refreshSelectors();
+        updateRing("A", document.getElementById("selA").value);
+        updateRing("B", document.getElementById("selB").value);
+    };
+
     function deleteDate(id) {
         const d = document.getElementById("sel" + id).value;
-        if (d && confirm("Del " + d + "?")) { delete db[d]; localStorage.setItem("windsorHub_v10", JSON.stringify(db)); refreshSelectors(); updateRing("A",""); updateRing("B",""); }
+        if (!d || !confirm("刪除整個 " + d + " 的數據？")) return;
+        delete db[d];
+        localStorage.setItem("windsorHub_v10", JSON.stringify(db));
+        refreshSelectors();
+        updateRing("A", ""); updateRing("B", "");
     }
 
     function updateRing(id, date) {
-        const valEl = document.getElementById("val" + id), ringEl = document.getElementById("ring" + id);
-        const lBox = document.getElementById("labels"+id+"_L"), rBox = document.getElementById("labels"+id+"_R");
-        lBox.innerHTML = ""; rBox.innerHTML = "";
+        const valEl = document.getElementById("val" + id);
+        const ringEl = document.getElementById("ring" + id);
+        const listEl = document.getElementById("list" + id);
         
         if (db[date]) {
-            const items = db[date], total = items.reduce((s, i) => s + i.amt, 0);
+            const items = db[date];
+            const total = items.reduce((sum, i) => sum + i.amt, 0);
             valEl.innerText = "$ " + total.toLocaleString();
             
-            let cur = 0;
-            const gps = items.map((i, idx) => {
-                const p = (i.amt / total) * 360, s = cur, e = cur + p; cur = e;
-                // 分配左右標籤
-                const targetBox = (s < 180) ? rBox : lBox;
-                targetBox.innerHTML += `<div><b>${i.name}</b>$${i.amt.toLocaleString()}</div>`;
-                return `${colors[i.cat]} ${s}deg ${e - 1.5}deg, transparent ${e - 1.5}deg ${e}deg`;
+            // 渲染明細並加入刪除按鈕
+            listEl.innerHTML = items.map((i, idx) => `
+                <div class="detail-item">
+                    <span>${i.name}</span>
+                    <b>$ ${i.amt.toLocaleString()}</b>
+                    <button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button>
+                </div>
+            `).join('');
+
+            if (total === 0) { ringEl.style.background = "#222"; return; }
+
+            let currentDeg = 0;
+            const gapDeg = 1.5; 
+            const gps = items.map(i => {
+                const p = (i.amt / total) * 360;
+                const s = currentDeg;
+                const e = currentDeg + p;
+                currentDeg = e;
+                return `${colors[i.cat]} ${s}deg ${e - gapDeg}deg, transparent ${e - gapDeg}deg ${e}deg`;
             });
             ringEl.style.background = `conic-gradient(${gps.join(",")})`;
         } else {
-            valEl.innerText = "$ 0"; ringEl.style.background = "#222";
+            valEl.innerText = "$ 0";
+            ringEl.style.background = "#222";
+            listEl.innerHTML = "";
         }
     }
     refreshSelectors();
