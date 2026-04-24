@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub V13.1</title>
+    <title>Windsor Hub v13.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -11,9 +11,8 @@
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         .hub-ctrl { background: #111; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; z-index: 5; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
-        select option { background: #000 !important; color: #FFF !important; }
         
-        /* 🛡️ 模組拖曳樣式重啟 */
+        /* 🛡️ 模組拖曳控制 */
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; border: 2px solid transparent; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
         
@@ -34,32 +33,33 @@
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
         .detail-list::-webkit-scrollbar { display: none; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
-        .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
         
         .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
+        .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.4); border-width: 3px; }
+        
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; pointer-events: auto; }
         .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
         
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; pointer-events: auto; }
+        input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
         
-        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; pointer-events: auto; }
+        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
         .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
         .color-opt.active { border-color: #FFF; transform: scale(1.1); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; pointer-events: auto; }
+        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         
-        .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; pointer-events: auto; }
+        .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
-        .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0 100px 0; order: 100; }
-        .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; pointer-events: auto; }
+        .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0 100px 0; }
+        .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
 <div class="container" id="modContainer">
     <header><h2>WINDSOR HUB</h2></header>
-    <div class="hub-ctrl draggable-mod" id="modHubCtrl" draggable="true">
+    <div class="hub-ctrl draggable-mod" id="modHub" draggable="true">
         <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
         <div style="display:flex">
             <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
@@ -71,7 +71,7 @@
     <div class="draggable-mod orb-area" id="modA" draggable="true">
         <div class="orb-header"><span class="orb-id">A</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">選取維度</option></select>
+                <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
                 <button class="del-x" onclick="deleteDim('A')">✕</button>
             </div>
         </div>
@@ -97,13 +97,13 @@
         <div class="color-grid" id="colorPicker"></div>
         <input type="text" id="inputAmt" placeholder="金額 / 成本">
         <input type="text" id="inputNow" placeholder="當前現值 (選填)">
-        <button class="main-btn" onclick="window.saveData()">數據存儲</button>
+        <button class="main-btn" onclick="saveData()">數據存儲</button>
     </div>
 
     <div class="draggable-mod orb-area" id="modB" draggable="true">
         <div class="orb-header"><span class="orb-id">B</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">選取維度</option></select>
+                <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
                 <button class="del-x" onclick="deleteDim('B')">✕</button>
             </div>
         </div>
@@ -117,8 +117,7 @@
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
-    
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V13.1 AXIAL BORDER LOCK</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V13.2 LOGIC HARDENED</div>
 </div>
 
 <div class="sync-gate">
@@ -133,28 +132,34 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
+    // 🛡️ 初始化核心組件
+    function init() {
+        initColorPicker();
+        initHubUI();
+        initDraggable();
+        loadOrder();
+    }
+
     function initColorPicker() {
         const g = document.getElementById("colorPicker");
         g.innerHTML = palette.map(c => `<div class="color-opt" style="background:${c}" onclick="selectColor('${c}', this)"></div>`).join('');
         g.children[0].classList.add("active");
     }
+    
     window.selectColor = (c, el) => {
         selectedColor = c;
-        document.querySelectorAll('.color-opt').forEach(opt => opt.classList.remove('active'));
+        document.querySelectorAll('.color-opt').forEach(opt => {
+            opt.classList.remove('active');
+            const bg = opt.style.backgroundColor;
+            if(bg === c || rgbToHex(bg).toUpperCase() === c.toUpperCase()) opt.classList.add('active');
+        });
         if(el) el.classList.add('active');
-        else {
-            document.querySelectorAll('.color-opt').forEach(opt => {
-                const optColor = opt.style.backgroundColor;
-                if(optColor === c || rgbToHex(optColor).toUpperCase() === c.toUpperCase()) opt.classList.add('active');
-            });
-        }
     };
+
     function rgbToHex(rgb) {
-        if (!rgb) return "#2F353B";
-        if (rgb.startsWith("#")) return rgb;
+        if (!rgb || rgb.startsWith("#")) return rgb;
         const vals = rgb.match(/\d+/g);
-        if (!vals) return rgb;
-        return "#" + vals.map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+        return "#" + vals.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
     }
 
     window.setMode = (m) => {
@@ -170,110 +175,62 @@
         if (Math.abs(n) >= 10000) return (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + "萬";
         return n.toLocaleString();
     }
-    function fmtComma(val) { return (parseFloat(val) || 0).toLocaleString(); }
-
+    
     window.saveData = function() {
         const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value;
         const n = document.getElementById("inputName").value || "UNNAMED";
         const cost = safeEval(document.getElementById("inputAmt").value) || 0;
         const nowStr = document.getElementById("inputNow").value;
         const current = nowStr ? safeEval(nowStr) : cost;
-        if (!dim) { alert("請輸入維度"); return; }
+        
+        if (!dim) { alert("請填寫日期或類別"); return; }
         if (!hubs[currentHubName][dim]) hubs[currentHubName][dim] = [];
+        
         const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" };
-        if (editMode.active && editMode.dim === dim && editMode.index > -1) hubs[currentHubName][dim][editMode.index] = entry;
-        else hubs[currentHubName][dim].push(entry);
+        
+        if (editMode.active && editMode.dim === dim && editMode.index > -1) {
+            hubs[currentHubName][dim][editMode.index] = entry;
+        } else {
+            hubs[currentHubName][dim].push(entry);
+        }
+        
         localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-        exitEditMode(); refreshSelectors();
-        updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value);
+        exitEditMode(); 
+        refreshSelectors(); 
+        // 🛡️ 強制刷新當前 A/B 環
+        updateRing("A", document.getElementById("selA").value);
+        updateRing("B", document.getElementById("selB").value);
     }
 
-    // 🛡️ 佔比計算功能接回
     window.updateRing = function(id, dim) {
         const valEl = document.getElementById("val" + id), ringEl = document.getElementById("ring" + id), listEl = document.getElementById("list" + id), svgEl = document.getElementById("leads" + id);
         svgEl.innerHTML = ""; ringSectors[id] = [];
         const db = hubs[currentHubName];
         
-        // 🛡️ 計算當前Hub資產總額 (所有維度的amt之和)
-        const allItemsInHub = Object.values(db).flat();
-        const hubTotal = allItemsInHub.reduce((sum, i) => sum + i.amt, 0);
+        const allItems = Object.values(db).flat();
+        const hubTotal = allItems.reduce((sum, i) => sum + i.amt, 0);
 
         if (db[dim]) {
             const items = db[dim], dimTotal = items.reduce((sum, i) => sum + i.amt, 0);
-            
-            // 🛡️ 計算維度佔Hub的百分比
             const dimPerc = hubTotal > 0 ? ((dimTotal / hubTotal) * 100).toFixed(1) : "0.0";
-            
             const displayVal = `$ ${fmtWan(dimTotal)} (${dimPerc}%)`;
             valEl.innerText = displayVal;
             valEl.style.fontSize = displayVal.length > 12 ? "14px" : (displayVal.length > 7 ? "18px" : "24px");
             
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${i.color}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${fmtComma(i.amt)}</b><button class="item-del-btn" onclick="removeItem('${dim}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:3px solid ${i.color}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${dim}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
+            
             if (dimTotal === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / dimTotal) * 360, s = curD, e = curD + p; curD = e;
-                ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, color: i.color, hasNow: i.hasNow, idx, dim, total: dimTotal });
+                ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, color: i.color, hasNow: i.hasNow, idx, dim });
                 let finalColor = (i.hasNow && i.amt < i.cost) ? "#222" : i.color;
                 return `${finalColor} ${s}deg ${e - 1}deg, #000 ${e - 1}deg ${e}deg`;
             }).join(",")})`;
-        } else { valEl.innerText = `$ 0 (0.0%)`; valEl.style.fontSize = "18px"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
-    }
-
-    // 🛡️ 引線精密修正：絕對限位禁止衝破圓環幾何
-    function drawLead(id, sector) {
-        const svg = document.getElementById("leads" + id); svg.innerHTML = "";
-        const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        
-        // 核心幾何設定 (配合DonutRing CSS)
-        const centerX = 170, centerY = 105; 
-        const rStart = 85;   // ConicGradient 外緣
-        const rExt = 120;     // 引線轉折點外延
-        
-        // 引線起點：Donut外緣
-        const x1 = centerX + rStart * Math.cos(rad), y1 = centerY + rStart * Math.sin(rad);
-        
-        // 🛡️ 精密路徑：當項目位於 Donut 幾何的上下極限（垂直位置）時，
-        // 引線必須根據在左側或右側，強制向左右拉伸繞行，絕對禁止向下穿刺 Donut 的視覺洞。
-        const isRightSide = x1 >= centerX;
-        
-        let x2 = centerX + rExt * Math.cos(rad);
-        let y2 = centerY + rExt * Math.sin(rad);
-        
-        // 繞行邏輯：若轉折點仍太靠近Donut幾何（特別是位於垂直Donut內側區域），
-        // 強制向左右壁掛限位 (例如限位在 centerX +/- 85px)
-        if (Math.abs(Math.cos(rad)) < 0.5) {
-            x2 = centerX + (isRightSide ? 85 : -85);
-        }
-
-        // 壁掛牆限位：鎖定在左右安全牆壁上 (330px 或 10px)
-        const xLabel = isRightSide ? 330 : 10;
-        const yLabel = y2;
-        
-        const anchor = isRightSide ? "end" : "start";
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
-
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${yLabel}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
-        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
-        svg.appendChild(line);
-        
-        // 文字標籤精密對齊
-        const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xLabel); t1.setAttribute("y", yLabel - 6); t1.setAttribute("fill", "#FFFFFF"); 
-        t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
-        t1.setAttribute("text-anchor", anchor); t1.textContent = sector.name; svg.appendChild(t1);
-
-        const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
-        t2.setAttribute("x", xLabel); t2.setAttribute("y", yLabel + 12); 
-        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
-        t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
-        t2.setAttribute("text-anchor", anchor); t2.textContent = `$ ${fmtComma(sector.amt)} ${perf}`; svg.appendChild(t2);
+        } else { valEl.innerText = `$ 0 (0.0%)`; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
     }
 
     function handleRingClick(e, id) {
@@ -297,38 +254,50 @@
         }
     }
 
-    // 🛡️ 模組拖曳邏輯重啟
+    function drawLead(id, sector) {
+        const svg = document.getElementById("leads" + id); svg.innerHTML = "";
+        const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
+        const centerX = 170, centerY = 105;
+        const x1 = centerX + 85 * Math.cos(rad), y1 = centerY + 85 * Math.sin(rad);
+        let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
+        if (Math.abs(Math.cos(rad)) < 0.5) x2 = centerX + (x1 >= centerX ? 85 : -85);
+        const xLabel = x1 >= centerX ? 330 : 10;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+        line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
+        line.setAttribute("stroke", (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF");
+        line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
+        svg.appendChild(line);
+        const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 6); t1.setAttribute("fill", "#FFF");
+        t1.setAttribute("font-size", "12px"); t1.setAttribute("text-anchor", x1 >= centerX ? "end" : "start");
+        t1.textContent = sector.name; svg.appendChild(t1);
+        const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 12); 
+        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
+        t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", x1 >= centerX ? "end" : "start");
+        t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
+    }
+
     function initDraggable() {
         const container = document.getElementById('modContainer');
         document.querySelectorAll('.draggable-mod').forEach(mod => {
             mod.addEventListener('dragstart', (e) => {
-                // 🛡️ 精密限制：點擊 INPUT, SELECT, BUTTON 時不觸發拖拽
-                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('.hub-btn')) {
-                    e.preventDefault();
-                    return;
+                if (['INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.hub-btn')) {
+                    e.preventDefault(); return;
                 }
                 mod.classList.add('dragging');
-                mod.style.borderColor = "#FFF";
-                mod.style.borderWidth = "2px";
             });
             mod.addEventListener('dragend', () => {
                 mod.classList.remove('dragging');
-                mod.style.borderColor = "transparent";
-                mod.style.borderWidth = "2px";
-                saveOrder(); // 保存排序
+                saveOrder();
             });
         });
-
         container.addEventListener('dragover', e => {
             e.preventDefault();
             const dragging = document.querySelector('.dragging');
             if (!dragging) return;
             const afterEl = getDragAfterEl(container, e.clientY);
-            if (afterEl == null) {
-                container.appendChild(dragging);
-            } else {
-                container.insertBefore(dragging, afterEl);
-            }
+            afterEl == null ? container.appendChild(dragging) : container.insertBefore(dragging, afterEl);
         });
     }
     function getDragAfterEl(c, y) {
@@ -336,43 +305,38 @@
         return els.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset, element: child };
+            return closest;
         }, { offset: -Infinity }).element;
     }
-    function saveOrder() {
-        const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder', JSON.stringify(order));
-    }
-    function loadOrder() {
+    function saveOrder() { localStorage.setItem('windsorModOrder', JSON.stringify([...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id))); }
+    function loadOrder() { 
         const order = JSON.parse(localStorage.getItem('windsorModOrder'));
-        if (order) {
-            order.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) document.getElementById('modContainer').appendChild(el);
-            });
-        }
+        if (order) order.forEach(id => { const el = document.getElementById(id); if (el) document.getElementById('modContainer').appendChild(el); });
     }
 
-    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
-    window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
-    window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     window.switchHub = (n) => { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); updateRing("A",""); updateRing("B",""); };
     window.addNewHub = () => { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
-    window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除帳本？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
-    window.removeItem = (d, i, rid) => { if (confirm("刪除項目？")) { hubs[currentHubName][d].splice(i, 1); if (!hubs[currentHubName][d].length) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整個維度？")) { delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(id, ""); } };
-    function initHubUI() { const s = document.getElementById("hubSelector"); s.innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
-    window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("數據已複製"); };
+    window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
+    window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName][d].splice(i, 1); if (!hubs[currentHubName][d].length) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName][d]; refreshSelectors(); updateRing(id, ""); } };
+    function refreshSelectors() {
+        const dims = Object.keys(hubs[currentHubName]).sort();
+        ["selA", "selB"].forEach(id => {
+            const el = document.getElementById(id), cur = el.value;
+            el.innerHTML = "<option value=''>選取維度</option>" + dims.map(d => `<option value="${d}">${d}</option>`).join('');
+            el.value = hubs[currentHubName][cur] ? cur : "";
+        });
+    }
+    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
+    window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
+    window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
+    function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
+    window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("代碼已複製"); };
     window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效"); } };
 
-    // 初始化啟動
-    loadOrder(); // 恢復排序
-    initColorPicker(); initHubUI(); initDraggable(); // 🛡️ 啟動拖曳邏輯
+    window.onload = init;
 </script>
 </body>
 </html>
