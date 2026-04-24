@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v14.0</title>
+    <title>Windsor Hub v14.1</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 120px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -121,7 +121,7 @@
         <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V14.0 GEOMETRIC PRECISION</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V14.1 SOFT PALETTE</div>
 </div>
 
 <div class="sync-gate">
@@ -132,7 +132,9 @@
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
-    const palette = ["#2979FF", "#1A237E", "#3D5AFE", "#8A2BE2", "#AA00FF", "#FF00AA", "#FF1744", "#FF2D95", "#FFD600", "#FFC107"];
+    
+    // 🛡️ 總裁指定：全新 10 色柔和色盤
+    const palette = ["#F28695", "#FFC5BB", "#F9D84E", "#9DC847", "#BBEADB", "#AF7351", "#CBF1F7", "#DCC1E0", "#EA7878", "#FFF385"];
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
@@ -201,7 +203,6 @@
             }).join('');
             if (dimTotal === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
-            // 🛡️ 重新導入物理分割線 (0.8度黑縫) 確保同色區塊可區分
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / dimTotal) * 360, s = curD, e = curD + p; curD = e;
                 ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, color: i.color, hasNow: i.hasNow, idx, dim, total: dimTotal });
@@ -223,34 +224,26 @@
         if (y2 < centerY - yLimit) y2 = centerY - yLimit;
         const isRight = x1 >= centerX, xLabel = isRight ? 330 : 10;
         const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
-
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
         line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
         line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
         svg.appendChild(line);
-
-        // 🛡️ 名稱：下調 Y 軸（y2 - 4），讓它更貼近引線
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 4); t1.setAttribute("fill", "#FFF");
         t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
         t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
-
-        // 🛡️ 金額：上移 Y 軸（y2 + 10），解決黏在引線上的問題
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 10); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
         t2.setAttribute("text-anchor", isRight ? "end" : "start");
         t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
-
         const percStr = `${((sector.amt / sector.total) * 100).toFixed(1)}%`;
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); 
-        t3.setAttribute("fill", "#888");
-        t3.setAttribute("font-size", "9px"); t3.setAttribute("font-weight", "bold"); 
-        t3.setAttribute("text-anchor", isRight ? "end" : "start");
-        t3.textContent = percStr; svg.appendChild(t3);
+        t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("font-weight", "bold"); 
+        t3.setAttribute("text-anchor", isRight ? "end" : "start"); t3.textContent = percStr; svg.appendChild(t3);
     }
 
     window.handleListClick = function(id, idx) {
