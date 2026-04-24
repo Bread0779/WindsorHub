@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v13.9</title>
+    <title>Windsor Hub v14.0</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 120px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -32,7 +32,6 @@
         
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 20; }
         .detail-list::-webkit-scrollbar { display: none; }
-        
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; transition: 0.2s; }
         .detail-item:hover { background: rgba(255,255,255,0.05); }
         .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; pointer-events: none; }
@@ -122,7 +121,7 @@
         <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V13.9 SEAMLESS FLOW</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V14.0 GEOMETRIC PRECISION</div>
 </div>
 
 <div class="sync-gate">
@@ -202,12 +201,12 @@
             }).join('');
             if (dimTotal === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
-            // 🛡️ 消除破圖技術：微調 conic-gradient 避免次像素縫隙
+            // 🛡️ 重新導入物理分割線 (0.8度黑縫) 確保同色區塊可區分
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / dimTotal) * 360, s = curD, e = curD + p; curD = e;
                 ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, color: i.color, hasNow: i.hasNow, idx, dim, total: dimTotal });
                 let finalColor = (i.hasNow && i.amt < i.cost) ? "#222" : i.color;
-                return `${finalColor} ${s}deg ${e + 0.1}deg`; // 🛡️ 增加 0.1 度重疊補償消滅破圖
+                return `${finalColor} ${s}deg ${e - 0.8}deg, #000 ${e - 0.8}deg ${e}deg`;
             }).join(",")})`;
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
     }
@@ -231,19 +230,20 @@
         line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
         svg.appendChild(line);
 
+        // 🛡️ 名稱：下調 Y 軸（y2 - 4），讓它更貼近引線
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 10); t1.setAttribute("fill", "#FFF");
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 4); t1.setAttribute("fill", "#FFF");
         t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
         t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
 
+        // 🛡️ 金額：上移 Y 軸（y2 + 10），解決黏在引線上的問題
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 8); 
+        t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 10); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
         t2.setAttribute("text-anchor", isRight ? "end" : "start");
         t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
 
-        // 🛡️ 佔比垂直排版：移至金額下方第三行
         const percStr = `${((sector.amt / sector.total) * 100).toFixed(1)}%`;
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); 
@@ -325,7 +325,7 @@
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName][d].splice(i, 1); if (!hubs[currentHubName][d].length) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName][d]; refreshSelectors(); updateRing(id, ""); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName][d]; refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName]).sort();
         ["selA", "selB"].forEach(id => {
