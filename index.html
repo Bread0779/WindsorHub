@@ -3,51 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v12.0</title>
+    <title>Windsor Hub v12.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
         header { text-align: center; margin: 20px 0 35px 0; order: -3; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ 帳本控制器：新增編輯功能 */
-        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
-        .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
+        .hub-ctrl { background: #111; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; }
+        .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; flex-grow: 1; }
         
-        .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; }
-        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
-        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
+        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 150px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
+        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .chart-center { z-index: 6; text-align: center; pointer-events: none; width: 110px; }
-        .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); white-space: nowrap; } 
+        .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); white-space: nowrap; font-size: 24px; } 
         
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
-        .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
+        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; font-size: 10px; }
         
-        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; }
-        input, #inputCat { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
+        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; }
+        .input-group { margin-bottom: 15px; }
+        .input-label { display: block; font-size: 10px; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
+        .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
+        .mode-btn { flex: 1; padding: 8px; background: #111; color: #555; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        .mode-btn.active { background: #FFF; color: #000; border-color: #FFF; font-weight: bold; }
         
-        /* 🛡️ 去中心化標籤選單：顯示顏色而非文字 */
-        #inputCat option { background: #000; }
-        .color-label { font-size: 10px; color: #888; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 10px; box-sizing: border-box; margin-bottom: 10px; font-family: monospace; }
+        
+        /* 🎨 色盤選取器 */
+        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
+        .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-opt.active { border-color: #FFF; transform: scale(1.1); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
 
-        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
-        
+        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; letter-spacing: 2px; cursor: pointer; }
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
-        .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; letter-spacing: 1px; min-width: 100px; }
-
-        .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0 100px 0; order: 100; }
+        .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; }
+        .footer { text-align: center; font-size: 10px; color: #444; margin: 35px 0 100px 0; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
     </style>
 </head>
@@ -63,59 +63,63 @@
         </div>
     </div>
     
-    <div class="draggable-mod orb-area" id="modA" draggable="true">
+    <div class="orb-area" id="modA">
         <div class="orb-header"><span class="orb-id">● A</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">選取日期</option></select>
-                <button class="del-x" onclick="deleteDate('A')">✕</button>
+                <select class="time-select" id="selA" onchange="window.updateRing('A', this.value)"><option value="">選取維度</option></select>
+                <button class="del-x" onclick="deleteDim('A')">✕</button>
             </div>
         </div>
         <div class="chart-container">
             <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 340 210"></svg>
-            <div class="chart-center">
-                <div style="font-size:10px;color:#888;text-transform:uppercase">資產總額</div>
+            <div style="z-index:6; text-align:center; pointer-events:none; width:110px;">
+                <div style="font-size:10px;color:#888;text-transform:uppercase">維度總額</div>
                 <div id="valA" class="center-val">$ 0</div>
             </div>
         </div>
         <div id="listA" class="detail-list"></div>
     </div>
 
-    <div class="draggable-mod section" id="modInput" draggable="true" onclick="event.stopPropagation()">
-        <input type="date" id="inputDate">
-        <input type="text" id="inputName" placeholder="項目名稱 (例如: BTC / 台積電)">
-        <span class="color-label">選擇顯示色塊：</span>
-        <select id="inputCat">
-            <option value="travel" style="color:#2F353B">■ 深碳灰 (原旅遊)</option>
-            <option value="savings" style="color:#C0C0C0">■ 亮銀色 (原存款)</option>
-            <option value="cash" style="color:#1A1A1B">■ 極致黑 (原活存)</option>
-            <option value="invest" style="color:#F8F9FA">■ 珍珠白 (原投資)</option>
-            <option value="uninvested" style="color:#47586B">■ 鈦鋼藍 (原待投)</option>
-        </select>
+    <div class="section" id="modInput" onclick="event.stopPropagation()">
+        <span class="input-label">維度模式切換：</span>
+        <div class="mode-switch">
+            <button id="btnDateMode" class="mode-btn active" onclick="setMode('date')">日期模式</button>
+            <button id="btnTagMode" class="mode-btn" onclick="setMode('tag')">類別模式</button>
+        </div>
+        
+        <div id="dateArea"><input type="date" id="inputDate"></div>
+        <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="輸入類別名稱 (如: 股票 / 加密貨幣)"></div>
+        
+        <input type="text" id="inputName" placeholder="項目名稱 (如: 台積電 / BTC)">
+        
+        <span class="input-label">塗裝選色：</span>
+        <div class="color-grid" id="colorPicker"></div>
+        
         <input type="text" id="inputAmt" placeholder="金額 / 成本">
         <input type="text" id="inputNow" placeholder="當前現值 (選填)">
         <button class="main-btn" onclick="window.saveData()">數據存儲</button>
     </div>
 
-    <div class="draggable-mod orb-area" id="modB" draggable="true">
+    <div class="orb-area" id="modB">
         <div class="orb-header"><span class="orb-id">● B</span>
             <div class="time-ctrl">
-                <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">選取日期</option></select>
-                <button class="del-x" onclick="deleteDate('B')">✕</button>
+                <select class="time-select" id="selB" onchange="window.updateRing('B', this.value)"><option value="">選取維度</option></select>
+                <button class="del-x" onclick="deleteDim('B')">✕</button>
             </div>
         </div>
         <div class="chart-container">
             <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 340 210"></svg>
-            <div class="chart-center">
-                <div style="font-size:10px;color:#888;text-transform:uppercase">資產總額</div>
+            <div style="z-index:6; text-align:center; pointer-events:none; width:110px;">
+                <div style="font-size:10px;color:#888;text-transform:uppercase">維度總額</div>
                 <div id="valB" class="center-val">$ 0</div>
             </div>
         </div>
         <div id="listB" class="detail-list"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V12.0 MATRIX COMMANDER</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V12.5 DIMENSION SCEPTER</div>
 </div>
 
 <div class="sync-gate">
@@ -126,8 +130,27 @@
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
-    const colors = { travel: "#2F353B", savings: "#C0C0C0", cash: "#1A1A1B", invest: "#F8F9FA", uninvested: "#47586B" };
-    let ringSectors = { A: [], B: [] }, editMode = { active: false, date: null, index: -1 };
+    const palette = ["#2F353B", "#C0C0C0", "#1A1A1B", "#F8F9FA", "#47586B", "#FF8C00", "#39FF14", "#FF003C", "#00F0FF", "#8A2BE2"];
+    let selectedColor = palette[0], inputMode = 'date';
+    let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
+
+    function initColorPicker() {
+        const grid = document.getElementById("colorPicker");
+        grid.innerHTML = palette.map(c => `<div class="color-opt" style="background:${c}" onclick="selectColor('${c}', this)"></div>`).join('');
+        grid.children[0].classList.add("active");
+    }
+    window.selectColor = (c, el) => {
+        selectedColor = c;
+        document.querySelectorAll('.color-opt').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
+    };
+    window.setMode = (m) => {
+        inputMode = m;
+        document.getElementById("btnDateMode").classList.toggle("active", m === 'date');
+        document.getElementById("btnTagMode").classList.toggle("active", m === 'tag');
+        document.getElementById("dateArea").style.display = m === 'date' ? 'block' : 'none';
+        document.getElementById("tagArea").style.display = m === 'tag' ? 'block' : 'none';
+    };
 
     function fmtWan(val) {
         let n = parseFloat(val) || 0;
@@ -136,173 +159,119 @@
     }
     function fmtComma(val) { return (parseFloat(val) || 0).toLocaleString(); }
 
-    // 🛡️ 帳本編輯改名功能
-    window.editCurrentHubName = function() {
-        const newName = prompt("請輸入新的帳本名稱:", currentHubName);
-        if (newName && newName !== currentHubName) {
-            if (hubs[newName]) { alert("名稱已存在！"); return; }
-            hubs[newName] = hubs[currentHubName]; // 遷移數據
-            delete hubs[currentHubName]; // 刪除舊名
-            currentHubName = newName;
-            localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-            localStorage.setItem("windsorActiveHub", newName);
-            initHubUI();
-            alert("帳本名稱已更新！");
-        }
-    }
-
-    window.exportData = function() {
-        const dataStr = JSON.stringify(hubs);
-        const encoded = btoa(unescape(encodeURIComponent(dataStr)));
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy); dummy.value = encoded; dummy.select();
-        document.execCommand("copy"); document.body.removeChild(dummy);
-        alert("代碼已複製！");
-    }
-
-    window.importData = function() {
-        const code = prompt("請貼入代碼:");
-        if (code) {
-            try {
-                const decoded = decodeURIComponent(escape(atob(code)));
-                hubs = JSON.parse(decoded);
-                localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-                location.reload();
-            } catch (e) { alert("無效代碼。"); }
-        }
-    }
-
-    function initDraggable() {
-        document.querySelectorAll('.draggable-mod').forEach(d => {
-            d.addEventListener('dragstart', (e) => {
-                if (['INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName)) { e.preventDefault(); return; }
-                d.classList.add('dragging');
-            });
-            d.addEventListener('dragend', () => { d.classList.remove('dragging'); saveOrder(); });
-        });
-    }
-    const container = document.getElementById('modContainer');
-    container.addEventListener('dragover', e => {
-        e.preventDefault();
-        const dragging = document.querySelector('.dragging');
-        if (!dragging) return;
-        const after = getAfter(container, e.clientY);
-        after == null ? container.appendChild(dragging) : container.insertBefore(dragging, after);
-    });
-    function getAfter(c, y) {
-        const els = [...c.querySelectorAll('.draggable-mod:not(.dragging)')];
-        return els.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            return (offset < 0 && offset > closest.offset) ? { offset, element: child } : closest;
-        }, { offset: -Infinity }).element;
-    }
-    function saveOrder() { localStorage.setItem('windsorModOrder', JSON.stringify([...container.querySelectorAll('.draggable-mod')].map(el => el.id))); }
-    function loadOrder() { 
-        const order = JSON.parse(localStorage.getItem('windsorModOrder'));
-        if (order) order.forEach(id => { const el = document.getElementById(id); if (el) container.appendChild(el); });
-    }
-    function safeEval(str) { try { return Function('"use strict"; return (' + str.toString().replace(/[^-()\d/*+.]/g, '') + ')')(); } catch (e) { return 0; } }
-    
     window.saveData = function() {
-        const d = document.getElementById("inputDate").value, c = document.getElementById("inputCat").value, n = document.getElementById("inputName").value || "UNNAMED";
+        const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value;
+        const n = document.getElementById("inputName").value || "UNNAMED";
         const cost = safeEval(document.getElementById("inputAmt").value) || 0, nowValStr = document.getElementById("inputNow").value;
-        const current = nowValStr ? safeEval(nowValStr) : cost, hasNow = nowValStr !== "";
-        if (!d) { alert("選取日期"); return; }
-        if (!hubs[currentHubName][d]) hubs[currentHubName][d] = [];
-        const entry = { cat: c, name: n, cost, amt: current, hasNow };
-        if (editMode.active && editMode.date === d && editMode.index > -1) { hubs[currentHubName][d][editMode.index] = entry; } 
-        else { hubs[currentHubName][d].push(entry); }
+        const current = nowValStr ? safeEval(nowValStr) : cost;
+        if (!dim) { alert("請輸入日期或類別名稱"); return; }
+        if (!hubs[currentHubName][dim]) hubs[currentHubName][dim] = [];
+        const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowValStr !== "" };
+        
+        if (editMode.active && editMode.dim === dim && editMode.index > -1) {
+            hubs[currentHubName][dim][editMode.index] = entry;
+        } else {
+            hubs[currentHubName][dim].push(entry);
+        }
         localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
         exitEditMode(); refreshSelectors();
-        window.updateRing("A", document.getElementById("selA").value); window.updateRing("B", document.getElementById("selB").value);
-    }
-    function exitEditMode() {
-        editMode = { active: false, date: null, index: -1 };
-        document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = "";
-    }
-    window.clearLeads = function() { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); }
-    
-    function handleRingClick(e, id) {
-        e.stopPropagation();
-        const rect = e.target.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
-        let clickX = e.clientX, clickY = e.clientY;
-        const dx = clickX - centerX, dy = clickY - centerY;
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-        if (angle < 0) angle += 360;
-        const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
-        if (sector) {
-            drawLead(id, sector);
-            editMode = { active: true, date: sector.date, index: sector.idx };
-            document.getElementById("inputDate").value = sector.date;
-            document.getElementById("inputName").value = sector.name;
-            document.getElementById("inputCat").value = sector.cat;
-            document.getElementById("inputAmt").value = sector.cost;
-            document.getElementById("inputNow").value = sector.hasNow ? sector.amt : "";
-        }
+        updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value);
     }
 
-    window.updateRing = function(id, date) {
+    window.updateRing = function(id, dim) {
         const valEl = document.getElementById("val" + id), ringEl = document.getElementById("ring" + id), listEl = document.getElementById("list" + id), svgEl = document.getElementById("leads" + id);
         svgEl.innerHTML = ""; ringSectors[id] = [];
         const db = hubs[currentHubName];
-        if (db[date]) {
-            const items = db[date], total = items.reduce((sum, i) => sum + i.amt, 0);
+        if (db[dim]) {
+            const items = db[dim], total = items.reduce((sum, i) => sum + i.amt, 0);
             valEl.innerText = "$ " + fmtWan(total);
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${colors[i.cat]}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${fmtComma(i.amt)}</b><button class="item-del-btn" onclick="removeItem('${date}', ${idx}, '${id}')">✕</button></div>`;
+                return `<div class="detail-item"><span style="border-left:3px solid ${i.color}; padding-left:8px; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${fmtComma(i.amt)}</b><button class="item-del-btn" onclick="removeItem('${dim}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
             if (total === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
                 const p = (i.amt / total) * 360, s = curD, e = curD + p; curD = e;
-                ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, cat: i.cat, hasNow: i.hasNow, idx, date });
-                let color = (i.hasNow && i.amt < i.cost) ? "#222" : colors[i.cat];
-                return `${color} ${s}deg ${e - 0.8}deg, #000 ${e - 0.8}deg ${e}deg`;
+                ringSectors[id].push({ start: s, end: e, name: i.name, cost: i.cost, amt: i.amt, color: i.color, hasNow: i.hasNow, idx, dim });
+                return `${(i.hasNow && i.amt < i.cost) ? "#222" : i.color} ${s}deg ${e - 1}deg, #000 ${e - 1}deg ${e}deg`;
             }).join(",")})`;
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
+    }
+
+    function handleRingClick(e, id) {
+        e.stopPropagation();
+        const rect = e.target.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
+        let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) + 90;
+        if (angle < 0) angle += 360;
+        const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
+        if (sector) {
+            drawLead(id, sector);
+            editMode = { active: true, dim: sector.dim, index: sector.idx };
+            const isDate = !isNaN(Date.parse(sector.dim));
+            setMode(isDate ? 'date' : 'tag');
+            if (isDate) document.getElementById("inputDate").value = sector.dim;
+            else document.getElementById("inputTag").value = sector.dim;
+            document.getElementById("inputName").value = sector.name;
+            document.getElementById("inputAmt").value = sector.cost;
+            document.getElementById("inputNow").value = sector.hasNow ? sector.amt : "";
+            selectedColor = sector.color;
+            document.querySelectorAll('.color-opt').forEach(opt => {
+                opt.classList.toggle('active', opt.style.backgroundColor === hexToRgb(sector.color));
+            });
+        }
+    }
+
+    function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : null;
     }
 
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        const centerX = 170, centerY = 105, rStart = 85, rExt = 120;
-        const x1 = centerX + rStart * Math.cos(rad), y1 = centerY + rStart * Math.sin(rad);
-        let x2 = centerX + rExt * Math.cos(rad), y2 = centerY + rExt * Math.sin(rad);
-        const yLimit = 55;
-        if (y2 > centerY + yLimit) y2 = centerY + yLimit;
-        if (y2 < centerY - yLimit) y2 = centerY - yLimit;
-        const isRightSide = x2 >= centerX;
-        if (Math.abs(Math.cos(rad)) < 0.5) { x2 = centerX + (isRightSide ? 90 : -90); }
-        const xLabel = isRightSide ? 330 : 10;
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
+        const centerX = 170, centerY = 105, x1 = centerX + 85 * Math.cos(rad), y1 = centerY + 85 * Math.sin(rad);
+        let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
+        const isRight = x2 >= centerX, xLabel = isRight ? 330 : 10;
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
-        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
-        svg.appendChild(line);
+        line.setAttribute("stroke", (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF");
+        line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); svg.appendChild(line);
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 6); t1.setAttribute("fill", "#FFFFFF"); 
-        t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
-        t1.setAttribute("text-anchor", isRightSide ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
+        t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 6); t1.setAttribute("fill", "#FFF");
+        t1.setAttribute("font-size", "12px"); t1.setAttribute("text-anchor", isRight ? "end" : "start");
+        t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const perf = (sector.hasNow && sector.cost > 0) ? `(${((sector.amt-sector.cost)/sector.cost*100).toFixed(1)}%)` : "";
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 12); 
-        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C"); 
-        t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
-        t2.setAttribute("text-anchor", isRightSide ? "end" : "start"); t2.textContent = `$ ${fmtComma(sector.amt)} ${perf}`;
-        svg.appendChild(t2);
+        t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
+        t2.setAttribute("font-size", "10px"); t2.setAttribute("text-anchor", isRight ? "end" : "start");
+        t2.textContent = `$ ${fmtComma(sector.amt)}`; svg.appendChild(t2);
     }
 
-    window.switchHub = function(n) { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); window.updateRing("A", ""); window.updateRing("B", ""); };
-    window.addNewHub = function() { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
-    window.deleteCurrentHub = function() { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(Object.keys(hubs)[0]); } };
-    window.removeItem = function(d, i, rid) { if (confirm("移除項目？")) { hubs[currentHubName][d].splice(i, 1); if (hubs[currentHubName][d].length === 0) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); window.updateRing("A", document.getElementById("selA").value); window.updateRing("B", document.getElementById("selB").value); } };
-    window.deleteDate = function(id) { const d = document.getElementById("sel" + id).value; if (d && confirm("刪除該日所有數據？")) { delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); window.updateRing("A", ""); window.updateRing("B", ""); } };
-    function refreshSelectors() { const dts = Object.keys(hubs[currentHubName]).sort(); ["selA", "selB"].forEach(id => { const el = document.getElementById(id), cur = el.value; el.innerHTML = "<option value=''>選取日期</option>"; dts.forEach(d => { const o = document.createElement("option"); o.value = d; o.innerText = d; el.appendChild(o); }); el.value = hubs[currentHubName][cur] ? cur : ""; }); }
-    function initHubUI() { const s = document.getElementById("hubSelector"); s.innerHTML = ""; Object.keys(hubs).forEach(n => { const o = document.createElement("option"); o.value = n; o.innerText = n; if (n === currentHubName) o.selected = true; s.appendChild(o); }); refreshSelectors(); }
-    initDraggable(); loadOrder(); initHubUI();
+    function refreshSelectors() {
+        const dims = Object.keys(hubs[currentHubName]).sort();
+        ["selA", "selB"].forEach(id => {
+            const el = document.getElementById(id), cur = el.value;
+            el.innerHTML = "<option value=''>選取維度</option>";
+            dims.forEach(d => { const o = document.createElement("option"); o.value = d; o.innerText = d; el.appendChild(o); });
+            el.value = hubs[currentHubName][cur] ? cur : "";
+        });
+    }
+
+    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
+    window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
+    window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
+    window.switchHub = (n) => { currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); updateRing("A",""); updateRing("B",""); };
+    window.addNewHub = () => { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
+    window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
+    window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除帳本？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
+    window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName][d].splice(i, 1); if (!hubs[currentHubName][d].length) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整個維度？")) { delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(id, ""); } };
+    function initHubUI() { const s = document.getElementById("hubSelector"); s.innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
+    window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("代碼已複製"); };
+    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效"); } };
+
+    initColorPicker(); initHubUI();
 </script>
 </body>
 </html>
