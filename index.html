@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v13.5</title>
+    <title>Windsor Hub v13.6</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 120px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -11,7 +11,6 @@
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; order: -2; z-index: 5; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
-        select option { background: #000 !important; color: #FFF !important; }
         
         .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; border: 2px solid transparent; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
@@ -27,13 +26,15 @@
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .chart-center { z-index: 6; text-align: center; pointer-events: none; width: 110px; }
         .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.6); white-space: nowrap; font-size: 24px; } 
         
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
         .detail-list::-webkit-scrollbar { display: none; }
-        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; color: #FFF; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; }
+        /* 🛡️ 列表項目：點擊連動圓環 */
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; transition: background 0.2s; }
+        .detail-item:active { background: rgba(255,255,255,0.05); }
+        .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; }
+        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
         
         .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; transition: 0.3s; }
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.4); border-width: 3px; }
@@ -52,8 +53,6 @@
         
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
-        
-        /* 🛡️ Footer 位置修正 */
         .footer { text-align: center; font-size: 10px; color: #444; margin-top: 35px; margin-bottom: 100px; order: 100; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
     </style>
@@ -121,7 +120,7 @@
         <div id="listB" class="detail-list"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V13.5 GEOMETRIC ALIGN</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V13.6 SYNCHRONIZED</div>
 </div>
 
 <div class="sync-gate">
@@ -132,7 +131,9 @@
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
-    const palette = ["#2F353B", "#C0C0C0", "#1A1A1B", "#F8F9FA", "#47586B", "#FF8C00", "#39FF14", "#FF003C", "#00F0FF", "#8A2BE2"];
+    
+    // 🛡️ 總裁指定：全新超跑色盤
+    const palette = ["#2979FF", "#1A237E", "#3D5AFE", "#8A2BE2", "#AA00FF", "#FF00AA", "#FF1744", "#FF2D95", "#FFD600", "#FFC107"];
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
@@ -197,7 +198,8 @@
             valEl.innerText = "$ " + fmtWan(dimTotal);
             listEl.innerHTML = items.map((i, idx) => {
                 const perf = (i.hasNow && i.cost > 0) ? ((i.amt - i.cost) / i.cost * 100).toFixed(1) + "%" : "-";
-                return `<div class="detail-item"><span style="border-left:3px solid ${i.color}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="removeItem('${dim}', ${idx}, '${id}')">✕</button></div>`;
+                // 🛡️ 列表連動：點擊觸發 handleRingClick 的模擬效果
+                return `<div class="detail-item" onclick="handleListClick('${id}', ${idx})"><span style="border-left:3px solid ${i.color}; padding-left:8px; color:#FFF; font-weight:bold">${i.name}</span><b style="color:${i.amt>=i.cost?'#39FF14':'#FF003C'}">${perf}</b><b>$ ${i.amt.toLocaleString()}</b><button class="item-del-btn" onclick="event.stopPropagation(); removeItem('${dim}', ${idx}, '${id}')">✕</button></div>`;
             }).join('');
             if (dimTotal === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
@@ -210,37 +212,26 @@
         } else { valEl.innerText = "$ 0"; ringEl.style.background = "#080808"; listEl.innerHTML = ""; }
     }
 
-    // 🛡️ 引線核心：限制高度與避讓圓環
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        const centerX = 170, centerY = 105;
-        const x1 = centerX + 85 * Math.cos(rad), y1 = centerY + 85 * Math.sin(rad);
-        
-        // 強制向左右偏移避讓圓環
+        const centerX = 170, centerY = 105, r1 = 85;
+        const x1 = centerX + r1 * Math.cos(rad), y1 = centerY + r1 * Math.sin(rad);
         let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
         if (Math.abs(Math.cos(rad)) < 0.5) x2 = centerX + (x1 >= centerX ? 85 : -85);
-        
-        // 🛡️ 軸向高度鎖定：禁止超過圓環上下緣
         const yLimit = 55;
         if (y2 > centerY + yLimit) y2 = centerY + yLimit;
         if (y2 < centerY - yLimit) y2 = centerY - yLimit;
-
         const isRight = x1 >= centerX, xLabel = isRight ? 330 : 10;
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
-
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
-        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
+        line.setAttribute("stroke", (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF");
+        line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
         svg.appendChild(line);
-
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 6); t1.setAttribute("fill", "#FFF");
         t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
         t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
-
-        // 🛡️ 佔比數據：在金額旁加上百分比
         const percStr = `(${((sector.amt / sector.total) * 100).toFixed(1)}%)`;
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 12); 
@@ -250,40 +241,43 @@
         t2.textContent = `$ ${sector.amt.toLocaleString()} ${percStr}`; svg.appendChild(t2);
     }
 
+    // 🛡️ 列表連動橋接器
+    window.handleListClick = (id, idx) => {
+        const sector = ringSectors[id][idx];
+        if (sector) activateEdit(id, sector);
+    }
+
     function handleRingClick(e, id) {
         e.stopPropagation();
         const rect = e.target.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
         let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) + 90;
         if (angle < 0) angle += 360;
         const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end);
-        if (sector) {
-            drawLead(id, sector);
-            document.getElementById("modInput").classList.add("edit-active");
-            editMode = { active: true, dim: sector.dim, index: sector.idx };
-            const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-");
-            setMode(isD ? 'date' : 'tag');
-            if (isD) document.getElementById("inputDate").value = sector.dim;
-            else document.getElementById("inputTag").value = sector.dim;
-            document.getElementById("inputName").value = sector.name;
-            document.getElementById("inputAmt").value = sector.cost;
-            document.getElementById("inputNow").value = sector.hasNow ? sector.amt : "";
-            selectColor(sector.color);
-        }
+        if (sector) activateEdit(id, sector);
+    }
+
+    function activateEdit(id, sector) {
+        drawLead(id, sector);
+        document.getElementById("modInput").classList.add("edit-active");
+        editMode = { active: true, dim: sector.dim, index: sector.idx };
+        const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-");
+        setMode(isD ? 'date' : 'tag');
+        if (isD) document.getElementById("inputDate").value = sector.dim;
+        else document.getElementById("inputTag").value = sector.dim;
+        document.getElementById("inputName").value = sector.name;
+        document.getElementById("inputAmt").value = sector.cost;
+        document.getElementById("inputNow").value = sector.hasNow ? sector.amt : "";
+        selectColor(sector.color);
     }
 
     function initDraggable() {
         const container = document.getElementById('modContainer');
         document.querySelectorAll('.draggable-mod').forEach(mod => {
             mod.addEventListener('dragstart', (e) => {
-                if (['INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.hub-btn')) {
-                    e.preventDefault(); return;
-                }
+                if (['INPUT', 'SELECT', 'BUTTON'].includes(e.target.tagName) || e.target.closest('.hub-btn')) { e.preventDefault(); return; }
                 mod.classList.add('dragging');
             });
-            mod.addEventListener('dragend', () => {
-                mod.classList.remove('dragging');
-                saveOrder();
-            });
+            mod.addEventListener('dragend', () => { mod.classList.remove('dragging'); saveOrder(); });
         });
         container.addEventListener('dragover', e => {
             e.preventDefault();
@@ -313,7 +307,7 @@
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName][d].splice(i, 1); if (!hubs[currentHubName][d].length) delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName][d]; refreshSelectors(); updateRing(id, ""); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName][d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName]).sort();
         ["selA", "selB"].forEach(id => {
