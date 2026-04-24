@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v14.1</title>
+    <title>Windsor Hub v14.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 120px; }
         .container { max-width: 380px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -121,7 +121,7 @@
         <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
     
-    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V14.1 SOFT PALETTE</div>
+    <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V14.2 VELVET REVERIE</div>
 </div>
 
 <div class="sync-gate">
@@ -133,8 +133,8 @@
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
     
-    // 🛡️ 總裁指定：全新 10 色柔和色盤
-    const palette = ["#F28695", "#FFC5BB", "#F9D84E", "#9DC847", "#BBEADB", "#AF7351", "#CBF1F7", "#DCC1E0", "#EA7878", "#FFF385"];
+    // 🛡️ 總裁指定：絲絨幻境 10 色柔和色盤
+    const palette = ["#F28695", "#FFC5BB", "#FFB6BD", "#EA7878", "#D06483", "#DCC1E0", "#D9C7EF", "#CBF1F7", "#AFD1F1", "#AF7351"];
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
