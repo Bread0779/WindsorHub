@@ -3,38 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v15.3</title>
+    <title>Windsor Hub v15.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局：左空、中帳、右筆 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
-        
-        .left-filler { flex: 1; min-width: 10px; } 
-        
-        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 500px; }
-        
+        .left-filler { flex: 1; min-width: 10px; pointer-events: none; } 
+        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; }
         .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 30px; } 
         
-        .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; transition: 0.3s; height: fit-content; }
+        .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
         .side-note:focus-within { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .note-title { font-size: 18px; font-weight: 900; color: #FF8C00; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; }
         #noteArea { width: 100%; height: 500px; background: transparent; border: none; color: #BBB; font-family: inherit; font-size: 14px; line-height: 1.6; outline: none; resize: none; }
 
         @media (max-width: 1100px) {
             .left-filler { display: none; }
-            .right-column { justify-content: center; padding-left: 0; }
+            .right-column { justify-content: center; padding-left: 0; width: 100%; }
             .layout-wrapper { flex-direction: column; align-items: center; padding-bottom: 150px; }
             .side-note { width: 380px; position: static; margin-top: 20px; order: 10; }
             #noteArea { height: 250px; }
         }
 
-        header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
+        header { text-align: center; margin: 20px 0 35px 0; width: 100%; pointer-events: none; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ 拖曳模組樣式 */
-        .draggable-mod { width: 100%; cursor: grab; transition: transform 0.2s, border 0.2s; user-select: none; position: relative; margin-bottom: 20px; box-sizing: border-box; }
-        .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; border-radius: 30px; }
+        /* 🛡️ 拖曳容器增強 */
+        .draggable-mod { width: 100%; cursor: grab; transition: transform 0.2s; user-select: none; position: relative; margin-bottom: 25px; box-sizing: border-box; }
+        .draggable-mod:active { cursor: grabbing; }
+        .dragging { opacity: 0.4; transform: scale(0.96); border: 2px solid #FF8C00 !important; border-radius: 30px; }
         
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
@@ -43,9 +40,13 @@
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; pointer-events: none; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
-        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; pointer-events: auto; }
+        /* 下拉與編輯群組 */
+        .time-ctrl-group { display: flex; gap: 5px; pointer-events: auto; }
+        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 10px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .mini-btn:hover { background: #FFF; color: #000; }
+        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
@@ -73,7 +74,6 @@
         .color-opt.active { border-color: #FFF; transform: scale(1.1); }
         
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
-        
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
         
@@ -89,9 +89,8 @@
     <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 模組開始 -->
         <div class="draggable-mod" id="modHub" draggable="true">
-            <div class="hub-ctrl">
+            <div class="hub-ctrl" onclick="event.stopPropagation()">
                 <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
                 <div style="display:flex">
                     <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
@@ -103,10 +102,14 @@
         
         <div class="draggable-mod" id="modA" draggable="true">
             <div class="orb-area">
-                <div class="orb-header"><span class="orb-id">A</span>
-                    <div class="time-ctrl">
-                        <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
-                        <button class="del-x" onclick="deleteDim('A')">✕</button>
+                <div class="orb-header">
+                    <span class="orb-id">A</span>
+                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                        <div class="time-ctrl">
+                            <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
+                            <button class="del-x" onclick="deleteDim('A')">✕</button>
+                        </div>
+                        <button class="mini-btn" title="編輯名稱" onclick="renameDimension('selA')">✎</button>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -128,7 +131,7 @@
                     <button id="btnTag" class="mode-btn" onclick="setMode('tag')">類別模式</button>
                 </div>
                 <div id="dateArea"><input type="date" id="inputDate"></div>
-                <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="輸入類別 (如: 股票)"></div>
+                <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="類別名稱"></div>
                 <input type="text" id="inputName" placeholder="項目名稱">
                 <div class="color-grid" id="colorPicker"></div>
                 <input type="text" id="inputAmt" placeholder="金額 / 成本">
@@ -139,10 +142,14 @@
 
         <div class="draggable-mod" id="modB" draggable="true">
             <div class="orb-area">
-                <div class="orb-header"><span class="orb-id">B</span>
-                    <div class="time-ctrl">
-                        <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
-                        <button class="del-x" onclick="deleteDim('B')">✕</button>
+                <div class="orb-header">
+                    <span class="orb-id">B</span>
+                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                        <div class="time-ctrl">
+                            <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
+                            <button class="del-x" onclick="deleteDim('B')">✕</button>
+                        </div>
+                        <button class="mini-btn" title="編輯名稱" onclick="renameDimension('selB')">✎</button>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -157,7 +164,7 @@
             </div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.3 DRAG RESTORED</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.5 MATRIX DIMENSION</div>
     </div>
 
     <div class="right-column">
@@ -184,6 +191,23 @@
         initColorPicker(); initHubUI(); initDraggable(); loadOrder();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
     }
+
+    // 🛡️ 編輯類別/日期名稱功能
+    window.renameDimension = (selectId) => {
+        const oldName = document.getElementById(selectId).value;
+        if (!oldName) { alert("請先從選單中選取一個項目！"); return; }
+        const newName = prompt("請輸入新名稱:", oldName);
+        if (newName && newName !== oldName) {
+            if (hubs[currentHubName].data[newName]) { alert("名稱已存在，請使用不同名稱！"); return; }
+            hubs[currentHubName].data[newName] = hubs[currentHubName].data[oldName];
+            delete hubs[currentHubName].data[oldName];
+            localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
+            refreshSelectors();
+            document.getElementById(selectId).value = newName;
+            updateRing(selectId.slice(-1), newName);
+            alert("名稱已更新！");
+        }
+    };
 
     window.saveNote = () => {
         hubs[currentHubName].note = document.getElementById("noteArea").value;
@@ -232,7 +256,7 @@
         const cost = safeEval(document.getElementById("inputAmt").value) || 0;
         const nowStr = document.getElementById("inputNow").value;
         const current = nowStr ? safeEval(nowStr) : cost;
-        if (!dim) { alert("請填寫維度"); return; }
+        if (!dim) { alert("請輸入維度"); return; }
         if (!hubs[currentHubName].data) hubs[currentHubName].data = {};
         if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = [];
         const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" };
@@ -315,7 +339,7 @@
 
     function activateEdit(id, sector) {
         drawLead(id, sector);
-        document.getElementById("modInput").classList.add("edit-active");
+        document.getElementById("modInput").querySelector('.section').classList.add("edit-active");
         editMode = { active: true, dim: sector.dim, index: sector.idx };
         const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-");
         setMode(isD ? 'date' : 'tag');
@@ -334,14 +358,14 @@
         }
     });
 
-    // 🛡️ 模組拖曳核心：針對 main-container 進行事件監聽
+    // 🛡️ 模組拖曳加固修復
     function initDraggable() {
         const container = document.getElementById('modContainer');
-        document.querySelectorAll('.draggable-mod').forEach(mod => {
+        const mods = document.querySelectorAll('.draggable-mod');
+        
+        mods.forEach(mod => {
             mod.addEventListener('dragstart', (e) => {
-                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('.hub-btn') || e.target.closest('.time-ctrl')) { 
-                    e.preventDefault(); return; 
-                }
+                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); return; }
                 mod.classList.add('dragging');
             });
             mod.addEventListener('dragend', () => {
@@ -349,15 +373,20 @@
                 saveOrder();
             });
         });
-        container.addEventListener('dragover', e => {
+
+        container.addEventListener('dragover', (e) => {
             e.preventDefault();
-            const dragging = document.querySelector('.dragging');
-            if (!dragging) return;
+            const draggingEl = document.querySelector('.dragging');
+            if (!draggingEl) return;
             const afterEl = getDragAfterEl(container, e.clientY);
-            if (afterEl == null) container.appendChild(dragging);
-            else container.insertBefore(dragging, afterEl);
+            if (afterEl == null) {
+                container.appendChild(draggingEl);
+            } else {
+                container.insertBefore(draggingEl, afterEl);
+            }
         });
     }
+
     function getDragAfterEl(c, y) {
         const els = [...c.querySelectorAll('.draggable-mod:not(.dragging)')];
         return els.reduce((closest, child) => {
@@ -367,6 +396,7 @@
             return closest;
         }, { offset: -Infinity }).element;
     }
+
     function saveOrder() { 
         const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
         localStorage.setItem('windsorModOrder', JSON.stringify(order)); 
@@ -395,7 +425,7 @@
             el.value = hubs[currentHubName].data[cur] ? cur : "";
         });
     }
-    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
+    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").querySelector('.section').classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
     window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
