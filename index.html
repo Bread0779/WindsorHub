@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v18.5</title>
+    <title>Windsor Hub v18.8</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 佈局結構 */
+        /* 核心佈局 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; } 
-        
         .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; }
         .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 40px; } 
         
@@ -20,17 +19,17 @@
 
         @media (max-width: 1100px) {
             .left-filler { display: none; }
-            .right-column { justify-content: center; padding-left: 0; width: 100%; }
             .layout-wrapper { flex-direction: column; align-items: center; padding-bottom: 150px; }
-            .side-note { width: 380px; position: static; margin-top: 20px; order: 10; }
-            #noteArea { height: 250px; }
+            .main-container { width: 380px; }
+            .right-column { width: 380px; padding-left: 0; margin-top: 20px; order: 10; }
+            .side-note { width: 100%; position: static; }
         }
 
-        /* 🛡️ 插槽樣式修復：確保最小高度，讓內容撐開 */
-        .slot-container { width: 100%; margin-bottom: 35px; border: 1px dashed #333; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 100px; display: flex; flex-direction: column; }
-        .slot-content { width: 100%; height: auto; min-height: 20px; }
-        .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #444; font-size: 10px; padding: 0 8px; font-weight: bold; letter-spacing: 1px; }
-        .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 20; box-shadow: 0 0 10px rgba(255,140,0,0.3); }
+        /* 🛡️ 專業插槽樣式 */
+        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 0; box-sizing: border-box; position: relative; min-height: 120px; transition: 0.4s; }
+        .slot-container.occupied { border: none; min-height: auto; } /* 有內容時隱藏虛線並自適應高度 */
+        .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #444; font-size: 10px; padding: 0 8px; font-weight: bold; }
+        .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 50; }
 
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
@@ -38,50 +37,43 @@
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; margin-bottom: 20px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        /* 模組基本樣式 */
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; box-sizing: border-box; }
+        /* 模組內容 */
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; box-sizing: border-box; }
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; box-sizing: border-box; width: 100%; }
+        
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
-        
         .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
-        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
+        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; }
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        
-        .chart-center { z-index: 15; text-align: center; pointer-events: none; width: 130px; position: relative; }
         .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; } 
         
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 20; }
+        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; position: relative; z-index: 21; }
-        
-        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; box-sizing: border-box; width: 100%; }
-        .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.5); border-width: 3px; }
+        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
         
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
         .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
-        
         input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        
         .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
         .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
         .color-opt.active { border-color: #FFF; transform: scale(1.1); }
-        
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
+        
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
-        
         .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
 
-        #original-modules { display: none; }
+        /* 🛡️ 實體資源池 (隱藏) */
+        #resource-pool { display: none; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
@@ -101,11 +93,11 @@
             </div>
         </div>
 
-        <!-- 🛡️ 修復後的插槽系統 -->
+        <!-- 插槽開始 -->
         <div class="slot-container" id="slot1">
-            <span class="slot-label">POSITION 1</span>
+            <span class="slot-label">POSITION 01</span>
             <select class="slot-selector" onchange="quantumAssign(1, this.value)">
-                <option value="none">-- 選擇內容 --</option>
+                <option value="none">-- 待放入 --</option>
                 <option value="modA">帳本 A</option>
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
@@ -114,9 +106,9 @@
         </div>
 
         <div class="slot-container" id="slot2">
-            <span class="slot-label">POSITION 2</span>
+            <span class="slot-label">POSITION 02</span>
             <select class="slot-selector" onchange="quantumAssign(2, this.value)">
-                <option value="none">-- 選擇內容 --</option>
+                <option value="none">-- 待放入 --</option>
                 <option value="modA">帳本 A</option>
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
@@ -125,9 +117,9 @@
         </div>
 
         <div class="slot-container" id="slot3">
-            <span class="slot-label">POSITION 3</span>
+            <span class="slot-label">POSITION 03</span>
             <select class="slot-selector" onchange="quantumAssign(3, this.value)">
-                <option value="none">-- 選擇內容 --</option>
+                <option value="none">-- 待放入 --</option>
                 <option value="modA">帳本 A</option>
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
@@ -135,7 +127,7 @@
             <div class="slot-content"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.5 STABLE SLOTS</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.8 ABSOLUTE SLOT REBUILD</div>
     </div>
 
     <div class="right-column">
@@ -146,8 +138,8 @@
     </div>
 </div>
 
-<!-- 🛡️ 模組存儲庫 (保持隱藏，直到被抓取) -->
-<div id="original-modules">
+<!-- 🛡️ 實體資源池：存儲真正的 DOM 元素 -->
+<div id="resource-pool">
     <div class="orb-area" id="modA">
         <div class="orb-header"><span class="orb-id">A</span>
             <div class="time-ctrl-group" onclick="event.stopPropagation()">
@@ -217,39 +209,46 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 強制位移量子引擎
+    // 🛡️ 實體分配引擎：絕不遺失模組
     function quantumAssign(slotNum, moduleId) {
+        const slotEl = document.getElementById(`slot${slotNum}`);
+        const contentEl = slotEl.querySelector('.slot-content');
+
+        // 如果選的是 none，把目前插槽裡的東西收回資源池
         if (moduleId === 'none') {
-            const content = document.querySelector(`#slot${slotNum} .slot-content`);
-            if (content.firstChild) document.getElementById('original-modules').appendChild(content.firstChild);
+            if (contentEl.firstChild) document.getElementById('resource-pool').appendChild(contentEl.firstChild);
+            slotEl.classList.remove('occupied');
             saveSlotConfig();
             return;
         }
 
-        // 🛡️ 獨佔檢查：如果 A 已在插槽 1，選插槽 2 為 A 時，插槽 1 變空
+        // 獨佔邏輯：巡邏其他插槽，如果有人正在用我要的模組，把它趕走
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
             const otherSel = document.querySelector(`#slot${i} .slot-selector`);
             if (otherSel.value === moduleId) {
                 otherSel.value = 'none';
-                document.querySelector(`#slot${i} .slot-content`).innerHTML = '';
+                document.getElementById(`slot${i}`).querySelector('.slot-content').innerHTML = '';
+                document.getElementById(`slot${i}`).classList.remove('occupied');
             }
         }
 
-        const targetContent = document.querySelector(`#slot${slotNum} .slot-content`);
-        const module = document.getElementById(moduleId);
+        // 執行移動
+        const physicalModule = document.getElementById(moduleId);
+        if (!physicalModule) return;
+
+        // 如果目前的插槽本來就有內容，先清空回庫房
+        contentEl.innerHTML = '';
+        contentEl.appendChild(physicalModule);
+        slotEl.classList.add('occupied');
         
-        // 把原本插槽的東西退回庫房
-        if (targetContent.firstChild) document.getElementById('original-modules').appendChild(targetContent.firstChild);
-        
-        targetContent.appendChild(module);
         saveSlotConfig();
         
-        // 🔄 強制數據刷新
+        // 🔄 強制數據刷新同步
         setTimeout(() => {
             if (moduleId === 'modA') updateRing("A", document.getElementById("selA").value);
             if (moduleId === 'modB') updateRing("B", document.getElementById("selB").value);
-        }, 50);
+        }, 30);
     }
 
     function saveSlotConfig() {
@@ -258,27 +257,20 @@
             s2: document.querySelector('#slot2 .slot-selector').value,
             s3: document.querySelector('#slot3 .slot-selector').value
         };
-        localStorage.setItem('windsorQuantumConfig_v18_5', JSON.stringify(config));
+        localStorage.setItem('windsorSlotConfig_v18_8', JSON.stringify(config));
     }
 
     function loadSlotConfig() {
-        const config = JSON.parse(localStorage.getItem('windsorQuantumConfig_v18_5')) || { s1: 'modA', s2: 'modInput', s3: 'modB' };
+        const config = JSON.parse(localStorage.getItem('windsorSlotConfig_v18_8')) || { s1: 'modA', s2: 'modInput', s3: 'modB' };
+        // 🛡️ 分段強制載入，解決 DOM 渲染死鎖
+        setTimeout(() => quantumAssign(1, config.s1), 50);
+        setTimeout(() => quantumAssign(2, config.s2), 100);
+        setTimeout(() => quantumAssign(3, config.s3), 150);
         
-        // 🛡️ 修復渲染死鎖：按順序強制分配
-        setTimeout(() => {
-            if (config.s1 !== 'none') {
-                document.querySelector('#slot1 .slot-selector').value = config.s1;
-                quantumAssign(1, config.s1);
-            }
-            if (config.s2 !== 'none') {
-                document.querySelector('#slot2 .slot-selector').value = config.s2;
-                quantumAssign(2, config.s2);
-            }
-            if (config.s3 !== 'none') {
-                document.querySelector('#slot3 .slot-selector').value = config.s3;
-                quantumAssign(3, config.s3);
-            }
-        }, 100);
+        // 更新下拉選單顯示
+        document.querySelector('#slot1 .slot-selector').value = config.s1;
+        document.querySelector('#slot2 .slot-selector').value = config.s2;
+        document.querySelector('#slot3 .slot-selector').value = config.s3;
     }
 
     function init() {
