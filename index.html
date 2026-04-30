@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v16.0</title>
+    <title>Windsor Hub v16.1</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局：左空、中帳、右筆 */
+        /* 🛡️ 佈局：確保容器不會鎖死子元素排序 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; pointer-events: none; } 
         .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; }
@@ -29,10 +29,10 @@
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ v11.3 經典拖曳樣式回歸 */
-        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; transition: transform 0.2s; }
+        /* 🛡️ 拖曳組件：確保 transform 不會干擾排序判定 */
+        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; }
         .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.4; transform: scale(0.95); }
+        .dragging { opacity: 0.2; background: rgba(255,140,0,0.1); border: 2px dashed #FF8C00 !important; }
         
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
@@ -44,7 +44,7 @@
         .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
@@ -88,7 +88,7 @@
     <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 模組區段：回歸 v11.3 經典可拖曳屬性 -->
+        <!-- 🛡️ 模組區段：已強化座標反應 -->
         <div class="draggable-mod" id="modHub" draggable="true">
             <div class="hub-ctrl">
                 <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
@@ -164,7 +164,7 @@
             </div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V16.0 CLASSIC DRAG ENGINE</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V16.1 FORCE FIELD REBUILT</div>
     </div>
 
     <div class="right-column">
@@ -192,17 +192,15 @@
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
     }
 
-    // 🛡️ v11.3 經典 HTML5 拖曳重排邏輯
+    // 🛡️ 核心：強制坐標對應的經典拖曳引擎
     function initClassicDrag() {
         const container = document.getElementById('modContainer');
         const mods = document.querySelectorAll('.draggable-mod');
 
         mods.forEach(mod => {
             mod.addEventListener('dragstart', (e) => {
-                // 排除互動元素
-                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
-                    e.preventDefault();
-                    return;
+                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('.time-ctrl-group')) {
+                    e.preventDefault(); return;
                 }
                 mod.classList.add('dragging');
             });
@@ -213,9 +211,12 @@
             });
         });
 
+        // 🛡️ 修正判定：確保在 main-container 範圍內精確交換
         container.addEventListener('dragover', e => {
-            e.preventDefault(); // 🛡️ 關鍵：攔截預設行為以消除叉叉
+            e.preventDefault();
             const draggingEl = document.querySelector('.dragging');
+            if (!draggingEl) return;
+            
             const afterEl = getDragAfterEl(container, e.clientY);
             if (afterEl == null) {
                 container.appendChild(draggingEl);
@@ -379,8 +380,8 @@
         const percStr = `${((sector.amt / sector.total) * 100).toFixed(1)}%`;
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); 
-        t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("font-weight", "bold"); 
-        t3.setAttribute("text-anchor", isRight ? "end" : "start"); t3.textContent = percStr; svg.appendChild(t3);
+        t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("text-anchor", isRight ? "end" : "start");
+        t3.textContent = percStr; svg.appendChild(t3);
     }
 
     window.handleListClick = function(id, idx) {
