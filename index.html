@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v18.2</title>
+    <title>Windsor Hub v18.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局：量子插槽系統 */
+        /* 佈局結構 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; } 
         
@@ -26,11 +26,11 @@
             #noteArea { height: 250px; }
         }
 
-        /* 🛡️ 插槽樣式：動態調整 */
-        .slot-container { width: 100%; margin-bottom: 25px; border: 1px dashed #222; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 50px; transition: 0.3s; }
-        .slot-container.active { border-color: transparent; }
-        .slot-label { position: absolute; top: -12px; left: 25px; background: #000; color: #444; font-size: 9px; padding: 0 5px; font-weight: bold; }
-        .slot-selector { position: absolute; top: -12px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 5px; font-size: 10px; font-weight: bold; cursor: pointer; padding: 2px 8px; z-index: 20; }
+        /* 🛡️ 插槽樣式修復：確保最小高度，讓內容撐開 */
+        .slot-container { width: 100%; margin-bottom: 35px; border: 1px dashed #333; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 100px; display: flex; flex-direction: column; }
+        .slot-content { width: 100%; height: auto; min-height: 20px; }
+        .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #444; font-size: 10px; padding: 0 8px; font-weight: bold; letter-spacing: 1px; }
+        .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 20; box-shadow: 0 0 10px rgba(255,140,0,0.3); }
 
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
@@ -38,6 +38,7 @@
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; margin-bottom: 20px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
+        /* 模組基本樣式 */
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; box-sizing: border-box; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
@@ -100,9 +101,9 @@
             </div>
         </div>
 
-        <!-- 🛡️ 插槽系統：實體量子遷移 -->
+        <!-- 🛡️ 修復後的插槽系統 -->
         <div class="slot-container" id="slot1">
-            <span class="slot-label">SLOT 01</span>
+            <span class="slot-label">POSITION 1</span>
             <select class="slot-selector" onchange="quantumAssign(1, this.value)">
                 <option value="none">-- 選擇內容 --</option>
                 <option value="modA">帳本 A</option>
@@ -113,7 +114,7 @@
         </div>
 
         <div class="slot-container" id="slot2">
-            <span class="slot-label">SLOT 02</span>
+            <span class="slot-label">POSITION 2</span>
             <select class="slot-selector" onchange="quantumAssign(2, this.value)">
                 <option value="none">-- 選擇內容 --</option>
                 <option value="modA">帳本 A</option>
@@ -124,7 +125,7 @@
         </div>
 
         <div class="slot-container" id="slot3">
-            <span class="slot-label">SLOT 03</span>
+            <span class="slot-label">POSITION 3</span>
             <select class="slot-selector" onchange="quantumAssign(3, this.value)">
                 <option value="none">-- 選擇內容 --</option>
                 <option value="modA">帳本 A</option>
@@ -134,7 +135,7 @@
             <div class="slot-content"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.2 QUANTUM SLOTS</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.5 STABLE SLOTS</div>
     </div>
 
     <div class="right-column">
@@ -145,7 +146,7 @@
     </div>
 </div>
 
-<!-- 原始模組庫 (隱藏) -->
+<!-- 🛡️ 模組存儲庫 (保持隱藏，直到被抓取) -->
 <div id="original-modules">
     <div class="orb-area" id="modA">
         <div class="orb-header"><span class="orb-id">A</span>
@@ -216,40 +217,39 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 量子插槽引擎
+    // 🛡️ 強制位移量子引擎
     function quantumAssign(slotNum, moduleId) {
         if (moduleId === 'none') {
-            const currentContent = document.querySelector(`#slot${slotNum} .slot-content`);
-            if (currentContent.firstChild) {
-                document.getElementById('original-modules').appendChild(currentContent.firstChild);
-            }
+            const content = document.querySelector(`#slot${slotNum} .slot-content`);
+            if (content.firstChild) document.getElementById('original-modules').appendChild(content.firstChild);
             saveSlotConfig();
             return;
         }
 
-        // 偵測是否已有其他插槽佔用了該模組
+        // 🛡️ 獨佔檢查：如果 A 已在插槽 1，選插槽 2 為 A 時，插槽 1 變空
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
-            const otherSelector = document.querySelector(`#slot${i} .slot-selector`);
-            if (otherSelector.value === moduleId) {
-                // 騰空原位置
-                otherSelector.value = 'none';
-                const otherContent = document.querySelector(`#slot${i} .slot-content`);
-                otherContent.innerHTML = '';
+            const otherSel = document.querySelector(`#slot${i} .slot-selector`);
+            if (otherSel.value === moduleId) {
+                otherSel.value = 'none';
+                document.querySelector(`#slot${i} .slot-content`).innerHTML = '';
             }
         }
 
-        // 執行位移
-        const targetSlotContent = document.querySelector(`#slot${slotNum} .slot-content`);
+        const targetContent = document.querySelector(`#slot${slotNum} .slot-content`);
         const module = document.getElementById(moduleId);
         
-        // 如果插槽本來有東西，先退回庫房
-        if (targetSlotContent.firstChild) {
-            document.getElementById('original-modules').appendChild(targetSlotContent.firstChild);
-        }
+        // 把原本插槽的東西退回庫房
+        if (targetContent.firstChild) document.getElementById('original-modules').appendChild(targetContent.firstChild);
         
-        targetSlotContent.appendChild(module);
+        targetContent.appendChild(module);
         saveSlotConfig();
+        
+        // 🔄 強制數據刷新
+        setTimeout(() => {
+            if (moduleId === 'modA') updateRing("A", document.getElementById("selA").value);
+            if (moduleId === 'modB') updateRing("B", document.getElementById("selB").value);
+        }, 50);
     }
 
     function saveSlotConfig() {
@@ -258,30 +258,32 @@
             s2: document.querySelector('#slot2 .slot-selector').value,
             s3: document.querySelector('#slot3 .slot-selector').value
         };
-        localStorage.setItem('windsorQuantumConfig', JSON.stringify(config));
+        localStorage.setItem('windsorQuantumConfig_v18_5', JSON.stringify(config));
     }
 
     function loadSlotConfig() {
-        const config = JSON.parse(localStorage.getItem('windsorQuantumConfig')) || { s1: 'modA', s2: 'modInput', s3: 'modB' };
+        const config = JSON.parse(localStorage.getItem('windsorQuantumConfig_v18_5')) || { s1: 'modA', s2: 'modInput', s3: 'modB' };
         
-        // 初始化選擇器與內容
-        document.querySelector('#slot1 .slot-selector').value = config.s1;
-        document.querySelector('#slot2 .slot-selector').value = config.s2;
-        document.querySelector('#slot3 .slot-selector').value = config.s3;
-        
-        if (config.s1 !== 'none') quantumAssign(1, config.s1);
-        if (config.s2 !== 'none') quantumAssign(2, config.s2);
-        if (config.s3 !== 'none') quantumAssign(3, config.s3);
+        // 🛡️ 修復渲染死鎖：按順序強制分配
+        setTimeout(() => {
+            if (config.s1 !== 'none') {
+                document.querySelector('#slot1 .slot-selector').value = config.s1;
+                quantumAssign(1, config.s1);
+            }
+            if (config.s2 !== 'none') {
+                document.querySelector('#slot2 .slot-selector').value = config.s2;
+                quantumAssign(2, config.s2);
+            }
+            if (config.s3 !== 'none') {
+                document.querySelector('#slot3 .slot-selector').value = config.s3;
+                quantumAssign(3, config.s3);
+            }
+        }, 100);
     }
 
     function init() {
         initColorPicker(); initHubUI(); loadSlotConfig();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
-        // 量子數據同步：確保遷移後圖表依然正確顯示
-        setTimeout(() => {
-            updateRing("A", document.getElementById("selA").value);
-            updateRing("B", document.getElementById("selB").value);
-        }, 100);
     }
 
     window.renameDimension = (selectId) => {
@@ -464,7 +466,9 @@
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName].data || {}).sort();
         ["selA", "selB"].forEach(id => {
-            const el = document.getElementById(id), cur = el.value;
+            const el = document.getElementById(id);
+            if (!el) return;
+            const cur = el.value;
             el.innerHTML = "<option value=''>選取維度</option>" + dims.map(d => `<option value="${d}">${d}</option>`).join('');
             el.value = hubs[currentHubName].data[cur] ? cur : "";
         });
