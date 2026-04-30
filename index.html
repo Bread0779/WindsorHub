@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v19.6</title>
+    <title>Windsor Hub v19.7</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 佈局結構 */
+        /* 核心佈局 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; } 
         .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; }
@@ -25,7 +25,7 @@
             .side-note { width: 100%; position: static; }
         }
 
-        /* 插槽樣式 */
+        /* 插槽系統 */
         .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 140px; display: flex; flex-direction: column; }
         .slot-container.active-slot { border: 2px solid transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; letter-spacing: 1px; }
@@ -49,29 +49,35 @@
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
+        /* 🛡️ 圓環與最高層級總額數字 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
-        .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; } 
+        .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 8; }
         
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 20; }
+        /* 🛡️ 總金額數字圖層：絕對最高優先權 */
+        .chart-center { 
+            z-index: 20; /* 比圓環(5)和引導線(8)都高 */
+            text-align: center; 
+            pointer-events: none; 
+            width: 140px; 
+            position: relative; 
+            background: rgba(0,0,0,0.6); /* 稍微背景虛化，確保數字穿透 */
+            border-radius: 50%;
+            padding: 10px 0;
+        }
+        .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; letter-spacing: -1px; } 
+        
+        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 25; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
         
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.4); border-width: 3px; }
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
         .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
         
-        /* 🛡️ 白色日曆圖示修復 */
+        /* 白色日曆圖示 */
         input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
-        input[type="date"] { cursor: pointer; position: relative; }
-        input[type="date"]::-webkit-calendar-picker-indicator { 
-            filter: invert(1); /* 轉為白色 */
-            cursor: pointer; 
-            padding: 5px;
-            opacity: 0.8;
-        }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
         .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
         .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
@@ -137,7 +143,7 @@
             <div class="slot-body" style="width:100%"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V19.6 CALENDAR FIXED</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V19.7 TOP-LAYER CALIBRATION</div>
     </div>
 
     <div class="right-column">
@@ -175,10 +181,7 @@
             <button id="btnDate" class="mode-btn active" onclick="setMode('date')">日期模式</button>
             <button id="btnTag" class="mode-btn" onclick="setMode('tag')">類別模式</button>
         </div>
-        <!-- 🛡️ 日曆修復：加入強制觸發點擊事件 -->
-        <div id="dateArea">
-            <input type="date" id="inputDate" onclick="this.showPicker()">
-        </div>
+        <div id="dateArea"><input type="date" id="inputDate" onclick="this.showPicker()"></div>
         <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="類別名稱"></div>
         <input type="text" id="inputName" placeholder="項目名稱">
         <div class="color-grid" id="colorPicker"></div>
@@ -224,13 +227,11 @@
     function performPhysicalMove(slotNum, moduleId) {
         const slotContainer = document.getElementById(`slot${slotNum}`);
         const slotBody = slotContainer.querySelector('.slot-body');
-
         if (moduleId === 'none') {
             if (slotBody.firstChild) document.getElementById('physical-vault').appendChild(slotBody.firstChild);
             slotContainer.classList.remove('active-slot');
             saveSlotMemory(); return;
         }
-
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
             const otherSel = document.querySelector(`#slot${i} .slot-selector`);
@@ -241,13 +242,11 @@
                 document.getElementById(`slot${i}`).classList.remove('active-slot');
             }
         }
-
         const targetModule = document.getElementById(moduleId);
         if (slotBody.firstChild) document.getElementById('physical-vault').appendChild(slotBody.firstChild);
         slotBody.appendChild(targetModule);
         slotContainer.classList.add('active-slot');
         saveSlotMemory();
-        
         setTimeout(() => {
             if (moduleId === 'modA') updateRing("A", document.getElementById("selA").value);
             if (moduleId === 'modB') updateRing("B", document.getElementById("selB").value);
@@ -260,11 +259,11 @@
             p2: document.querySelector('#slot2 .slot-selector').value,
             p3: document.querySelector('#slot3 .slot-selector').value
         };
-        localStorage.setItem('windsorSlotMemory_v19_6', JSON.stringify(config));
+        localStorage.setItem('windsorSlotMemory_v19_7', JSON.stringify(config));
     }
 
     function loadSlotMemory() {
-        const config = JSON.parse(localStorage.getItem('windsorSlotMemory_v19_6')) || { p1: 'modA', p2: 'modInput', p3: 'modB' };
+        const config = JSON.parse(localStorage.getItem('windsorSlotMemory_v19_7')) || { p1: 'modA', p2: 'modInput', p3: 'modB' };
         setTimeout(() => { document.querySelector('#slot1 .slot-selector').value = config.p1; performPhysicalMove(1, config.p1); }, 50);
         setTimeout(() => { document.querySelector('#slot2 .slot-selector').value = config.p2; performPhysicalMove(2, config.p2); }, 100);
         setTimeout(() => { document.querySelector('#slot3 .slot-selector').value = config.p3; performPhysicalMove(3, config.p3); }, 150);
@@ -443,6 +442,22 @@
             el.value = hubs[currentHubName].data[cur] ? cur : "";
         });
     }
+    
+    window.renameDimension = (selectId) => {
+        const oldName = document.getElementById(selectId).value;
+        if (!oldName) { alert("選取項目"); return; }
+        const newName = prompt("輸入新名稱:", oldName);
+        if (newName && newName !== oldName) {
+            if (hubs[currentHubName].data[newName]) { alert("重複！"); return; }
+            hubs[currentHubName].data[newName] = hubs[currentHubName].data[oldName];
+            delete hubs[currentHubName].data[oldName];
+            localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
+            refreshSelectors();
+            document.getElementById(selectId).value = newName;
+            updateRing(selectId.slice(-1), newName);
+        }
+    };
+
     function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
     window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
     function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
