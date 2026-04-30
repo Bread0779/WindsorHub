@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v15.9</title>
+    <title>Windsor Hub v16.0</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 佈局結構 */
+        /* 🛡️ 佈局：左空、中帳、右筆 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; pointer-events: none; } 
-        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; position: relative; }
+        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; }
         .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 30px; } 
         
         .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
@@ -26,39 +26,39 @@
             #noteArea { height: 250px; }
         }
 
-        header { text-align: center; margin: 20px 0 35px 0; width: 100%; pointer-events: none; }
+        header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ 原生拖曳樣式 */
-        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; transition: transform 0.2s, background 0.2s; }
+        /* 🛡️ v11.3 經典拖曳樣式回歸 */
+        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; transition: transform 0.2s; }
         .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.5; transform: scale(0.95); z-index: 1000; }
+        .dragging { opacity: 0.4; transform: scale(0.95); }
         
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; }
-        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; pointer-events: none; }
+        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
-        .time-ctrl-group { display: flex; gap: 5px; pointer-events: auto; }
+        .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; transition: 0.2s; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; pointer-events: none; }
-        .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; pointer-events: auto; }
+        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
+        .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         
         .chart-center { z-index: 15; text-align: center; pointer-events: none; width: 130px; position: relative; }
         .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.8); white-space: nowrap; font-size: 24px; } 
         
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 20; pointer-events: auto; }
+        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 20; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; position: relative; z-index: 21; }
         
-        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; box-sizing: border-box; pointer-events: auto; }
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; box-sizing: border-box; }
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.5); border-width: 3px; }
         
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -76,7 +76,7 @@
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
         
-        .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; pointer-events: none; }
+        .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
     </style>
 </head>
@@ -88,8 +88,9 @@
     <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <div class="draggable-mod" id="modHub">
-            <div class="hub-ctrl" onclick="event.stopPropagation()">
+        <!-- 🛡️ 模組區段：回歸 v11.3 經典可拖曳屬性 -->
+        <div class="draggable-mod" id="modHub" draggable="true">
+            <div class="hub-ctrl">
                 <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
                 <div style="display:flex">
                     <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
@@ -99,11 +100,11 @@
             </div>
         </div>
         
-        <div class="draggable-mod" id="modA">
+        <div class="draggable-mod" id="modA" draggable="true">
             <div class="orb-area">
                 <div class="orb-header">
                     <span class="orb-id">A</span>
-                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                    <div class="time-ctrl-group">
                         <div class="time-ctrl">
                             <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
                             <button class="del-x" onclick="deleteDim('A')">✕</button>
@@ -123,7 +124,7 @@
             </div>
         </div>
 
-        <div class="draggable-mod" id="modInput">
+        <div class="draggable-mod" id="modInput" draggable="true">
             <div class="section" onclick="event.stopPropagation()">
                 <div class="mode-switch">
                     <button id="btnDate" class="mode-btn active" onclick="setMode('date')">日期模式</button>
@@ -139,11 +140,11 @@
             </div>
         </div>
 
-        <div class="draggable-mod" id="modB">
+        <div class="draggable-mod" id="modB" draggable="true">
             <div class="orb-area">
                 <div class="orb-header">
                     <span class="orb-id">B</span>
-                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                    <div class="time-ctrl-group">
                         <div class="time-ctrl">
                             <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
                             <button class="del-x" onclick="deleteDim('B')">✕</button>
@@ -163,7 +164,7 @@
             </div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.9 NATIVE ENGINE</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V16.0 CLASSIC DRAG ENGINE</div>
     </div>
 
     <div class="right-column">
@@ -187,43 +188,39 @@
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
     function init() {
-        initColorPicker(); initHubUI(); initNativeDrag(); loadOrder();
+        initColorPicker(); initHubUI(); initClassicDrag(); loadOrder();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
     }
 
-    // 🛡️ 純原生 JavaScript 拖曳重排引擎 (絕不當機版)
-    function initNativeDrag() {
+    // 🛡️ v11.3 經典 HTML5 拖曳重排邏輯
+    function initClassicDrag() {
         const container = document.getElementById('modContainer');
-        let dragEl = null;
+        const mods = document.querySelectorAll('.draggable-mod');
 
-        container.addEventListener('mousedown', e => {
-            const target = e.target.closest('.draggable-mod');
-            if (!target) return;
-            
-            // 排除交互元素觸發拖曳
-            if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('.time-ctrl-group')) return;
+        mods.forEach(mod => {
+            mod.addEventListener('dragstart', (e) => {
+                // 排除互動元素
+                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
+                    e.preventDefault();
+                    return;
+                }
+                mod.classList.add('dragging');
+            });
 
-            dragEl = target;
-            dragEl.classList.add('dragging');
+            mod.addEventListener('dragend', () => {
+                mod.classList.remove('dragging');
+                saveOrder();
+            });
         });
 
-        document.addEventListener('mousemove', e => {
-            if (!dragEl) return;
-            e.preventDefault();
-            
+        container.addEventListener('dragover', e => {
+            e.preventDefault(); // 🛡️ 關鍵：攔截預設行為以消除叉叉
+            const draggingEl = document.querySelector('.dragging');
             const afterEl = getDragAfterEl(container, e.clientY);
             if (afterEl == null) {
-                container.appendChild(dragEl);
+                container.appendChild(draggingEl);
             } else {
-                container.insertBefore(dragEl, afterEl);
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (dragEl) {
-                dragEl.classList.remove('dragging');
-                dragEl = null;
-                saveOrder();
+                container.insertBefore(draggingEl, afterEl);
             }
         });
     }
@@ -243,11 +240,11 @@
 
     function saveOrder() {
         const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder_final', JSON.stringify(order));
+        localStorage.setItem('windsorModOrder_v16', JSON.stringify(order));
     }
 
     function loadOrder() {
-        const order = JSON.parse(localStorage.getItem('windsorModOrder_final'));
+        const order = JSON.parse(localStorage.getItem('windsorModOrder_v16'));
         if (order) {
             const container = document.getElementById('modContainer');
             order.forEach(id => {
@@ -259,7 +256,7 @@
 
     window.renameDimension = (selectId) => {
         const oldName = document.getElementById(selectId).value;
-        if (!oldName) { alert("選取項目！"); return; }
+        if (!oldName) { alert("請先選取項目！"); return; }
         const newName = prompt("輸入新名稱:", oldName);
         if (newName && newName !== oldName) {
             if (hubs[currentHubName].data[newName]) { alert("重複！"); return; }
