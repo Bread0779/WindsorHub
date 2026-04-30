@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v18.0</title>
+    <title>Windsor Hub v18.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局：Slot 系統確保絕對對齊 */
+        /* 🛡️ 佈局：量子插槽系統 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; } 
         
@@ -26,8 +26,10 @@
             #noteArea { height: 250px; }
         }
 
-        /* 🛡️ 插槽與選擇器樣式 */
-        .slot-container { width: 100%; margin-bottom: 30px; border: 1px dashed #333; border-radius: 35px; padding: 10px; box-sizing: border-box; position: relative; }
+        /* 🛡️ 插槽樣式：動態調整 */
+        .slot-container { width: 100%; margin-bottom: 25px; border: 1px dashed #222; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 50px; transition: 0.3s; }
+        .slot-container.active { border-color: transparent; }
+        .slot-label { position: absolute; top: -12px; left: 25px; background: #000; color: #444; font-size: 9px; padding: 0 5px; font-weight: bold; }
         .slot-selector { position: absolute; top: -12px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 5px; font-size: 10px; font-weight: bold; cursor: pointer; padding: 2px 8px; z-index: 20; }
 
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
@@ -78,7 +80,6 @@
         .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
 
-        /* 🛡️ 隱藏原本模組，由腳本分配到插槽 */
         #original-modules { display: none; }
     </style>
 </head>
@@ -99,35 +100,41 @@
             </div>
         </div>
 
-        <!-- 🛡️ 維度插槽區 -->
+        <!-- 🛡️ 插槽系統：實體量子遷移 -->
         <div class="slot-container" id="slot1">
-            <select class="slot-selector" onchange="assignModule(1, this.value)">
-                <option value="modA">插槽 1: 帳本A</option>
-                <option value="modB">插槽 1: 帳本B</option>
-                <option value="modInput">插槽 1: 輸入項</option>
+            <span class="slot-label">SLOT 01</span>
+            <select class="slot-selector" onchange="quantumAssign(1, this.value)">
+                <option value="none">-- 選擇內容 --</option>
+                <option value="modA">帳本 A</option>
+                <option value="modB">帳本 B</option>
+                <option value="modInput">輸入項</option>
             </select>
             <div class="slot-content"></div>
         </div>
 
         <div class="slot-container" id="slot2">
-            <select class="slot-selector" onchange="assignModule(2, this.value)">
-                <option value="modInput">插槽 2: 輸入項</option>
-                <option value="modA">插槽 2: 帳本A</option>
-                <option value="modB">插槽 2: 帳本B</option>
+            <span class="slot-label">SLOT 02</span>
+            <select class="slot-selector" onchange="quantumAssign(2, this.value)">
+                <option value="none">-- 選擇內容 --</option>
+                <option value="modA">帳本 A</option>
+                <option value="modB">帳本 B</option>
+                <option value="modInput">輸入項</option>
             </select>
             <div class="slot-content"></div>
         </div>
 
         <div class="slot-container" id="slot3">
-            <select class="slot-selector" onchange="assignModule(3, this.value)">
-                <option value="modB">插槽 3: 帳本B</option>
-                <option value="modA">插槽 3: 帳本A</option>
-                <option value="modInput">插槽 3: 輸入項</option>
+            <span class="slot-label">SLOT 03</span>
+            <select class="slot-selector" onchange="quantumAssign(3, this.value)">
+                <option value="none">-- 選擇內容 --</option>
+                <option value="modA">帳本 A</option>
+                <option value="modB">帳本 B</option>
+                <option value="modInput">輸入項</option>
             </select>
             <div class="slot-content"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.0 DIMENSION SLOTS</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.2 QUANTUM SLOTS</div>
     </div>
 
     <div class="right-column">
@@ -138,7 +145,7 @@
     </div>
 </div>
 
-<!-- 🛡️ 隱藏的原始模組資源 -->
+<!-- 原始模組庫 (隱藏) -->
 <div id="original-modules">
     <div class="orb-area" id="modA">
         <div class="orb-header"><span class="orb-id">A</span>
@@ -209,31 +216,72 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 插槽分配系統
-    function assignModule(slotNum, moduleId) {
-        const slotContent = document.querySelector(`#slot${slotNum} .slot-content`);
+    // 🛡️ 量子插槽引擎
+    function quantumAssign(slotNum, moduleId) {
+        if (moduleId === 'none') {
+            const currentContent = document.querySelector(`#slot${slotNum} .slot-content`);
+            if (currentContent.firstChild) {
+                document.getElementById('original-modules').appendChild(currentContent.firstChild);
+            }
+            saveSlotConfig();
+            return;
+        }
+
+        // 偵測是否已有其他插槽佔用了該模組
+        for (let i = 1; i <= 3; i++) {
+            if (i === slotNum) continue;
+            const otherSelector = document.querySelector(`#slot${i} .slot-selector`);
+            if (otherSelector.value === moduleId) {
+                // 騰空原位置
+                otherSelector.value = 'none';
+                const otherContent = document.querySelector(`#slot${i} .slot-content`);
+                otherContent.innerHTML = '';
+            }
+        }
+
+        // 執行位移
+        const targetSlotContent = document.querySelector(`#slot${slotNum} .slot-content`);
         const module = document.getElementById(moduleId);
-        slotContent.appendChild(module);
-        localStorage.setItem(`windsorSlot${slotNum}`, moduleId);
+        
+        // 如果插槽本來有東西，先退回庫房
+        if (targetSlotContent.firstChild) {
+            document.getElementById('original-modules').appendChild(targetSlotContent.firstChild);
+        }
+        
+        targetSlotContent.appendChild(module);
+        saveSlotConfig();
     }
 
-    function loadSlots() {
-        const s1 = localStorage.getItem('windsorSlot1') || 'modA';
-        const s2 = localStorage.getItem('windsorSlot2') || 'modInput';
-        const s3 = localStorage.getItem('windsorSlot3') || 'modB';
+    function saveSlotConfig() {
+        const config = {
+            s1: document.querySelector('#slot1 .slot-selector').value,
+            s2: document.querySelector('#slot2 .slot-selector').value,
+            s3: document.querySelector('#slot3 .slot-selector').value
+        };
+        localStorage.setItem('windsorQuantumConfig', JSON.stringify(config));
+    }
+
+    function loadSlotConfig() {
+        const config = JSON.parse(localStorage.getItem('windsorQuantumConfig')) || { s1: 'modA', s2: 'modInput', s3: 'modB' };
         
-        document.querySelector('#slot1 .slot-selector').value = s1;
-        document.querySelector('#slot2 .slot-selector').value = s2;
-        document.querySelector('#slot3 .slot-selector').value = s3;
+        // 初始化選擇器與內容
+        document.querySelector('#slot1 .slot-selector').value = config.s1;
+        document.querySelector('#slot2 .slot-selector').value = config.s2;
+        document.querySelector('#slot3 .slot-selector').value = config.s3;
         
-        assignModule(1, s1);
-        assignModule(2, s2);
-        assignModule(3, s3);
+        if (config.s1 !== 'none') quantumAssign(1, config.s1);
+        if (config.s2 !== 'none') quantumAssign(2, config.s2);
+        if (config.s3 !== 'none') quantumAssign(3, config.s3);
     }
 
     function init() {
-        initColorPicker(); initHubUI(); loadSlots();
+        initColorPicker(); initHubUI(); loadSlotConfig();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
+        // 量子數據同步：確保遷移後圖表依然正確顯示
+        setTimeout(() => {
+            updateRing("A", document.getElementById("selA").value);
+            updateRing("B", document.getElementById("selB").value);
+        }, 100);
     }
 
     window.renameDimension = (selectId) => {
@@ -311,6 +359,7 @@
 
     window.updateRing = function(id, dim) {
         const valEl = document.getElementById("val" + id), ringEl = document.getElementById("ring" + id), listEl = document.getElementById("list" + id), svgEl = document.getElementById("leads" + id);
+        if (!valEl) return;
         svgEl.innerHTML = ""; ringSectors[id] = [];
         const db = hubs[currentHubName].data || {};
         if (db[dim]) {
@@ -404,13 +453,14 @@
         currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
         initHubUI(); 
         document.getElementById("noteArea").value = hubs[n].note || "";
-        updateRing("A",""); updateRing("B",""); 
+        updateRing("A", document.getElementById("selA").value); 
+        updateRing("B", document.getElementById("selB").value); 
     };
     window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName].data || {}).sort();
         ["selA", "selB"].forEach(id => {
