@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v16.1</title>
+    <title>Windsor Hub v16.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局：確保容器不會鎖死子元素排序 */
+        /* 核心佈局 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; pointer-events: none; } 
-        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; }
+        
+        /* 🛡️ 拖曳容器：移除可能干擾定位的彈性屬性 */
+        .main-container { width: 380px; flex-shrink: 0; display: block; z-index: 10; min-height: 100vh; }
+        
         .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 30px; } 
         
         .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
@@ -26,13 +29,12 @@
             #noteArea { height: 250px; }
         }
 
-        header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
+        header { text-align: center; margin: 20px 0 35px 0; width: 100%; pointer-events: none; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ 拖曳組件：確保 transform 不會干擾排序判定 */
-        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; }
-        .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.2; background: rgba(255,140,0,0.1); border: 2px dashed #FF8C00 !important; }
+        /* 🛡️ 拖曳組件：增加實體感 */
+        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; display: block; }
+        .dragging { opacity: 0.2; transform: scale(0.98); border: 2px dashed #FF8C00 !important; border-radius: 30px; }
         
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
@@ -44,7 +46,7 @@
         .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; transition: 0.2s; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
@@ -85,10 +87,10 @@
 <div class="layout-wrapper">
     <div class="left-filler"></div>
 
+    <!-- 🛡️ 核心容器：改用 display: block 確保垂直物理排列無誤 -->
     <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 模組區段：已強化座標反應 -->
         <div class="draggable-mod" id="modHub" draggable="true">
             <div class="hub-ctrl">
                 <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
@@ -164,7 +166,7 @@
             </div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V16.1 FORCE FIELD REBUILT</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V16.2 ABSOLUTE REORDER</div>
     </div>
 
     <div class="right-column">
@@ -188,12 +190,12 @@
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
     function init() {
-        initColorPicker(); initHubUI(); initClassicDrag(); loadOrder();
+        initColorPicker(); initHubUI(); initStrongDrag(); loadOrder();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
     }
 
-    // 🛡️ 核心：強制坐標對應的經典拖曳引擎
-    function initClassicDrag() {
+    // 🛡️ v16.2 強力重排邏輯
+    function initStrongDrag() {
         const container = document.getElementById('modContainer');
         const mods = document.querySelectorAll('.draggable-mod');
 
@@ -211,7 +213,7 @@
             });
         });
 
-        // 🛡️ 修正判定：確保在 main-container 範圍內精確交換
+        // 🛡️ 座標暴力修復：計算當前滑鼠在容器中的實時位置
         container.addEventListener('dragover', e => {
             e.preventDefault();
             const draggingEl = document.querySelector('.dragging');
@@ -227,10 +229,14 @@
     }
 
     function getDragAfterEl(container, y) {
+        // 只過濾 main-container 下的直接子元素模組
         const draggableEls = [...container.querySelectorAll('.draggable-mod:not(.dragging)')];
+        
         return draggableEls.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
+            // 計算中心點與滑鼠 Y 軸的距離
             const offset = y - box.top - box.height / 2;
+            
             if (offset < 0 && offset > closest.offset) {
                 return { offset: offset, element: child };
             } else {
@@ -241,11 +247,11 @@
 
     function saveOrder() {
         const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder_v16', JSON.stringify(order));
+        localStorage.setItem('windsorModOrder_v16_2', JSON.stringify(order));
     }
 
     function loadOrder() {
-        const order = JSON.parse(localStorage.getItem('windsorModOrder_v16'));
+        const order = JSON.parse(localStorage.getItem('windsorModOrder_v16_2'));
         if (order) {
             const container = document.getElementById('modContainer');
             order.forEach(id => {
@@ -257,10 +263,10 @@
 
     window.renameDimension = (selectId) => {
         const oldName = document.getElementById(selectId).value;
-        if (!oldName) { alert("請先選取項目！"); return; }
+        if (!oldName) { alert("選取要更名的項目"); return; }
         const newName = prompt("輸入新名稱:", oldName);
         if (newName && newName !== oldName) {
-            if (hubs[currentHubName].data[newName]) { alert("重複！"); return; }
+            if (hubs[currentHubName].data[newName]) { alert("名稱重複！"); return; }
             hubs[currentHubName].data[newName] = hubs[currentHubName].data[oldName];
             delete hubs[currentHubName].data[oldName];
             localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
