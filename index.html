@@ -3,61 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v17.5</title>
+    <title>Windsor Hub v18.0</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 關鍵佈局：回歸最原始的空間分配，絕不干擾拖曳座標 */
-        .layout-wrapper { width: 100%; min-height: 100vh; padding: 20px 0; box-sizing: border-box; text-align: center; }
+        /* 🛡️ 佈局：Slot 系統確保絕對對齊 */
+        .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
+        .left-filler { flex: 1; min-width: 10px; } 
         
-        /* 中間帳本容器：用 margin: auto 達成絕對置中，無 CSS 座標干擾 */
-        .main-container { 
-            display: inline-block; /* 讓容器根據內容寬度縮放 */
-            width: 380px; 
-            text-align: left; 
-            vertical-align: top;
-            margin: 0 auto;
-        }
+        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 40px; } 
         
-        /* 右側筆記容器：改用 inline-block 並排，避免 absolute 定位造成的手感延遲 */
-        .right-column { 
-            display: inline-block;
-            width: 320px;
-            margin-left: 40px;
-            text-align: left;
-            vertical-align: top;
-        } 
-        
-        .side-note { width: 100%; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
-        .side-note:focus-within { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
         .note-title { font-size: 18px; font-weight: 900; color: #FF8C00; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; }
         #noteArea { width: 100%; height: 500px; background: transparent; border: none; color: #BBB; font-family: inherit; font-size: 14px; line-height: 1.6; outline: none; resize: none; }
 
         @media (max-width: 1100px) {
-            .main-container, .right-column { display: block; margin: 0 auto 20px auto; width: 380px; }
-            .right-column { margin-top: 20px; }
-            #noteArea { height: 200px; }
+            .left-filler { display: none; }
+            .right-column { justify-content: center; padding-left: 0; width: 100%; }
+            .layout-wrapper { flex-direction: column; align-items: center; padding-bottom: 150px; }
+            .side-note { width: 380px; position: static; margin-top: 20px; order: 10; }
+            #noteArea { height: 250px; }
         }
+
+        /* 🛡️ 插槽與選擇器樣式 */
+        .slot-container { width: 100%; margin-bottom: 30px; border: 1px dashed #333; border-radius: 35px; padding: 10px; box-sizing: border-box; position: relative; }
+        .slot-selector { position: absolute; top: -12px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 5px; font-size: 10px; font-weight: bold; cursor: pointer; padding: 2px 8px; z-index: 20; }
 
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ v11.3 經典拖曳樣式回歸 */
-        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; background: #080808; border-radius: 30px; }
-        .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.2; border: 2px dashed #FF8C00 !important; }
-        
-        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; margin-bottom: 20px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; }
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; box-sizing: border-box; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
         .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
@@ -71,7 +57,7 @@
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: pointer; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; position: relative; z-index: 21; }
         
-        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; box-sizing: border-box; }
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; box-sizing: border-box; width: 100%; }
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.5); border-width: 3px; }
         
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -91,99 +77,123 @@
         
         .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
+
+        /* 🛡️ 隱藏原本模組，由腳本分配到插槽 */
+        #original-modules { display: none; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
 
 <div class="layout-wrapper">
-    <div class="main-container" id="modContainer">
+    <div class="left-filler"></div>
+
+    <div class="main-container">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 模組區段：經典可拖曳機制 -->
-        <div class="draggable-mod" id="modHub" draggable="true">
-            <div class="hub-ctrl" onclick="event.stopPropagation()">
-                <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
-                <div style="display:flex">
-                    <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
-                    <button class="hub-btn" onclick="addNewHub()">＋</button>
-                    <button class="hub-btn" style="color:#FF003C; border-color: #FF003C;" onclick="deleteCurrentHub()">🗑</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="draggable-mod" id="modA" draggable="true">
-            <div class="orb-area">
-                <div class="orb-header">
-                    <span class="orb-id">A</span>
-                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
-                        <div class="time-ctrl">
-                            <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
-                            <button class="del-x" onclick="deleteDim('A')">✕</button>
-                        </div>
-                        <button class="mini-btn" onclick="renameDimension('selA')">✎</button>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
-                    <svg id="leadsA" class="leadline-layer" viewBox="0 0 340 210"></svg>
-                    <div class="chart-center">
-                        <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
-                        <div id="valA" class="center-val">$ 0</div>
-                    </div>
-                </div>
-                <div id="listA" class="detail-list" onclick="event.stopPropagation()"></div>
+        <div class="hub-ctrl">
+            <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
+            <div style="display:flex">
+                <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
+                <button class="hub-btn" onclick="addNewHub()">＋</button>
+                <button class="hub-btn" style="color:#FF003C; border-color: #FF003C;" onclick="deleteCurrentHub()">🗑</button>
             </div>
         </div>
 
-        <div class="draggable-mod" id="modInput" draggable="true">
-            <div class="section" onclick="event.stopPropagation()">
-                <div class="mode-switch">
-                    <button id="btnDate" class="mode-btn active" onclick="setMode('date')">日期模式</button>
-                    <button id="btnTag" class="mode-btn" onclick="setMode('tag')">類別模式</button>
-                </div>
-                <div id="dateArea"><input type="date" id="inputDate"></div>
-                <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="類別名稱"></div>
-                <input type="text" id="inputName" placeholder="項目名稱">
-                <div class="color-grid" id="colorPicker"></div>
-                <input type="text" id="inputAmt" placeholder="金額 / 成本">
-                <input type="text" id="inputNow" placeholder="當前現值 (選填)">
-                <button class="main-btn" onclick="saveData()">數據存儲</button>
-            </div>
+        <!-- 🛡️ 維度插槽區 -->
+        <div class="slot-container" id="slot1">
+            <select class="slot-selector" onchange="assignModule(1, this.value)">
+                <option value="modA">插槽 1: 帳本A</option>
+                <option value="modB">插槽 1: 帳本B</option>
+                <option value="modInput">插槽 1: 輸入項</option>
+            </select>
+            <div class="slot-content"></div>
         </div>
 
-        <div class="draggable-mod" id="modB" draggable="true">
-            <div class="orb-area">
-                <div class="orb-header">
-                    <span class="orb-id">B</span>
-                    <div class="time-ctrl-group" onclick="event.stopPropagation()">
-                        <div class="time-ctrl">
-                            <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
-                            <button class="del-x" onclick="deleteDim('B')">✕</button>
-                        </div>
-                        <button class="mini-btn" onclick="renameDimension('selB')">✎</button>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
-                    <svg id="leadsB" class="leadline-layer" viewBox="0 0 340 210"></svg>
-                    <div class="chart-center">
-                        <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
-                        <div id="valB" class="center-val">$ 0</div>
-                    </div>
-                </div>
-                <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
-            </div>
+        <div class="slot-container" id="slot2">
+            <select class="slot-selector" onchange="assignModule(2, this.value)">
+                <option value="modInput">插槽 2: 輸入項</option>
+                <option value="modA">插槽 2: 帳本A</option>
+                <option value="modB">插槽 2: 帳本B</option>
+            </select>
+            <div class="slot-content"></div>
+        </div>
+
+        <div class="slot-container" id="slot3">
+            <select class="slot-selector" onchange="assignModule(3, this.value)">
+                <option value="modB">插槽 3: 帳本B</option>
+                <option value="modA">插槽 3: 帳本A</option>
+                <option value="modInput">插槽 3: 輸入項</option>
+            </select>
+            <div class="slot-content"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V17.5 CLASSIC ENGINE RESTORED</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V18.0 DIMENSION SLOTS</div>
     </div>
 
-    <!-- 🛡️ 右側筆記本：使用 inline-block 並排，不干擾主座標系統 -->
     <div class="right-column">
         <div class="side-note" onclick="event.stopPropagation()">
             <div class="note-title">STRATEGIC NOTE</div>
             <textarea id="noteArea" placeholder="隨手筆記..." oninput="saveNote()"></textarea>
         </div>
+    </div>
+</div>
+
+<!-- 🛡️ 隱藏的原始模組資源 -->
+<div id="original-modules">
+    <div class="orb-area" id="modA">
+        <div class="orb-header"><span class="orb-id">A</span>
+            <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                <div class="time-ctrl">
+                    <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
+                    <button class="del-x" onclick="deleteDim('A')">✕</button>
+                </div>
+                <button class="mini-btn" onclick="renameDimension('selA')">✎</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
+            <svg id="leadsA" class="leadline-layer" viewBox="0 0 340 210"></svg>
+            <div class="chart-center">
+                <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
+                <div id="valA" class="center-val">$ 0</div>
+            </div>
+        </div>
+        <div id="listA" class="detail-list" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <div class="section" id="modInput" onclick="event.stopPropagation()">
+        <div class="mode-switch">
+            <button id="btnDate" class="mode-btn active" onclick="setMode('date')">日期模式</button>
+            <button id="btnTag" class="mode-btn" onclick="setMode('tag')">類別模式</button>
+        </div>
+        <div id="dateArea"><input type="date" id="inputDate"></div>
+        <div id="tagArea" style="display:none"><input type="text" id="inputTag" placeholder="類別名稱"></div>
+        <input type="text" id="inputName" placeholder="項目名稱">
+        <div class="color-grid" id="colorPicker"></div>
+        <input type="text" id="inputAmt" placeholder="金額 / 成本">
+        <input type="text" id="inputNow" placeholder="當前現值 (選填)">
+        <button class="main-btn" onclick="saveData()">數據存儲</button>
+    </div>
+
+    <div class="orb-area" id="modB">
+        <div class="orb-header"><span class="orb-id">B</span>
+            <div class="time-ctrl-group" onclick="event.stopPropagation()">
+                <div class="time-ctrl">
+                    <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
+                    <button class="del-x" onclick="deleteDim('B')">✕</button>
+                </div>
+                <button class="mini-btn" onclick="renameDimension('selB')">✎</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
+            <svg id="leadsB" class="leadline-layer" viewBox="0 0 340 210"></svg>
+            <div class="chart-center">
+                <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
+                <div id="valB" class="center-val">$ 0</div>
+            </div>
+        </div>
+        <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
 </div>
 
@@ -199,71 +209,31 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
+    // 🛡️ 插槽分配系統
+    function assignModule(slotNum, moduleId) {
+        const slotContent = document.querySelector(`#slot${slotNum} .slot-content`);
+        const module = document.getElementById(moduleId);
+        slotContent.appendChild(module);
+        localStorage.setItem(`windsorSlot${slotNum}`, moduleId);
+    }
+
+    function loadSlots() {
+        const s1 = localStorage.getItem('windsorSlot1') || 'modA';
+        const s2 = localStorage.getItem('windsorSlot2') || 'modInput';
+        const s3 = localStorage.getItem('windsorSlot3') || 'modB';
+        
+        document.querySelector('#slot1 .slot-selector').value = s1;
+        document.querySelector('#slot2 .slot-selector').value = s2;
+        document.querySelector('#slot3 .slot-selector').value = s3;
+        
+        assignModule(1, s1);
+        assignModule(2, s2);
+        assignModule(3, s3);
+    }
+
     function init() {
-        initColorPicker(); initHubUI(); initClassicDrag(); loadOrder();
+        initColorPicker(); initHubUI(); loadSlots();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
-    }
-
-    // 🛡️ v11.3 核心引擎：經典 HTML5 拖曳
-    function initClassicDrag() {
-        const container = document.getElementById('modContainer');
-        const mods = document.querySelectorAll('.draggable-mod');
-
-        mods.forEach(mod => {
-            mod.addEventListener('dragstart', (e) => {
-                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
-                    e.preventDefault(); return;
-                }
-                mod.classList.add('dragging');
-            });
-
-            mod.addEventListener('dragend', () => {
-                mod.classList.remove('dragging');
-                saveOrder();
-            });
-        });
-
-        container.addEventListener('dragover', e => {
-            e.preventDefault(); // 🛡️ 關鍵：允許放下，消除叉叉
-            const draggingEl = document.querySelector('.dragging');
-            if (!draggingEl) return;
-            
-            const afterEl = getDragAfterEl(container, e.clientY);
-            if (afterEl == null) {
-                container.appendChild(draggingEl);
-            } else {
-                container.insertBefore(draggingEl, afterEl);
-            }
-        });
-    }
-
-    function getDragAfterEl(container, y) {
-        const draggableEls = [...container.querySelectorAll('.draggable-mod:not(.dragging)')];
-        return draggableEls.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: -Infinity }).element;
-    }
-
-    function saveOrder() {
-        const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder_v17_5', JSON.stringify(order));
-    }
-
-    function loadOrder() {
-        const order = JSON.parse(localStorage.getItem('windsorModOrder_v17_5'));
-        if (order) {
-            const container = document.getElementById('modContainer');
-            order.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) container.appendChild(el);
-            });
-        }
     }
 
     window.renameDimension = (selectId) => {
@@ -411,7 +381,7 @@
 
     function activateEdit(id, sector) {
         drawLead(id, sector);
-        document.getElementById("modInput").querySelector('.section').classList.add("edit-active");
+        document.getElementById("modInput").classList.add("edit-active");
         editMode = { active: true, dim: sector.dim, index: sector.idx };
         const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-");
         setMode(isD ? 'date' : 'tag');
@@ -440,7 +410,7 @@
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName].data || {}).sort();
         ["selA", "selB"].forEach(id => {
@@ -449,7 +419,7 @@
             el.value = hubs[currentHubName].data[cur] ? cur : "";
         });
     }
-    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").querySelector('.section').classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
+    function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
     window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
