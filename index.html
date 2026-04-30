@@ -3,38 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v15.1</title>
+    <title>Windsor Hub v15.2</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 15px; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; padding-bottom: 120px; }
+        body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 🛡️ 佈局重構：Flex 順序調整 */
-        .layout-wrapper { display: flex; max-width: 1200px; margin: 0 auto; gap: 30px; align-items: flex-start; justify-content: center; }
+        /* 🛡️ 佈局：左空、中帳、右筆 */
+        .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         
-        /* 核心指揮中心 */
-        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; order: 1; }
-
-        /* 🛡️ 記事本：移至右側 */
-        .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; transition: 0.3s; order: 2; }
+        .left-filler { flex: 1; min-width: 10px; } /* 左側留白 */
+        
+        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        
+        .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 30px; } /* 右側筆記區 */
+        
+        /* 記事本樣式 */
+        .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; transition: 0.3s; height: fit-content; }
         .side-note:focus-within { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .note-title { font-size: 18px; font-weight: 900; color: #FF8C00; margin-bottom: 15px; letter-spacing: 2px; text-transform: uppercase; }
         #noteArea { width: 100%; height: 500px; background: transparent; border: none; color: #BBB; font-family: inherit; font-size: 14px; line-height: 1.6; outline: none; resize: none; }
 
-        @media (max-width: 800px) {
-            .layout-wrapper { flex-direction: column; align-items: center; }
-            .main-container { order: 1; width: 380px; }
-            .side-note { width: 380px; position: static; order: 5; margin-top: 20px; } /* 手機端依然維持底部 */
+        @media (max-width: 1100px) {
+            .left-filler { display: none; }
+            .right-column { justify-content: center; padding-left: 0; }
+            .layout-wrapper { flex-direction: column; align-items: center; padding-bottom: 150px; }
+            .side-note { width: 380px; position: static; margin-top: 20px; }
             #noteArea { height: 250px; }
         }
 
         header { text-align: center; margin: 20px 0 35px 0; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
-        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; }
+        
+        .hub-ctrl { width: 100%; background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; margin-bottom: 35px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        .draggable-mod { cursor: grab; transition: transform 0.2s; user-select: none; position: relative; z-index: 10; border: 2px solid transparent; }
+        /* 🛡️ 拖曳模組樣式 */
+        .draggable-mod { width: 100%; cursor: grab; transition: transform 0.2s, border 0.2s; user-select: none; position: relative; margin-bottom: 20px; box-sizing: border-box; }
         .dragging { opacity: 0.5; transform: scale(0.98); border: 2px solid #FFF !important; }
         
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; margin-bottom: 20px; text-align: center; box-sizing: border-box; overflow: hidden; }
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
@@ -56,7 +62,7 @@
         .detail-item b { color: #FFF; margin-left: auto; margin-right: 12px; pointer-events: none; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; position: relative; z-index: 21; }
         
-        .section { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 20px; border: 2px solid #FFF; box-sizing: border-box; transition: 0.4s ease; }
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; transition: 0.4s ease; }
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.5); border-width: 3px; }
         
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -73,17 +79,22 @@
         
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
-        .footer { text-align: center; font-size: 10px; color: #444; margin-top: 35px; margin-bottom: 100px; }
+        
+        /* 🛡️ 商標回位底部 */
+        .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; order: 100; }
+        
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
     </style>
 </head>
 <body onclick="clearLeads(event)">
 
 <div class="layout-wrapper">
-    <!--指揮中心模組-->
+    <div class="left-filler"></div> <!-- 🛡️ 左側空間留白 -->
+
     <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
+        <!-- 🛡️ 可拖曳模組區 -->
         <div class="draggable-mod hub-ctrl" id="modHub" draggable="true">
             <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
             <div style="display:flex">
@@ -143,13 +154,15 @@
             <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.1 FLANK CALIBRATED</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.2 SPACE BALANCE</div>
     </div>
 
-    <!-- 🛡️ 記事本模組：移至右側 -->
-    <div class="side-note" onclick="event.stopPropagation()">
-        <div class="note-title">STRATEGIC NOTE</div>
-        <textarea id="noteArea" placeholder="輸入戰略筆記..." oninput="saveNote()"></textarea>
+    <div class="right-column">
+        <!-- 🛡️ 側翼記事本 -->
+        <div class="side-note" onclick="event.stopPropagation()">
+            <div class="note-title">STRATEGIC NOTE</div>
+            <textarea id="noteArea" placeholder="隨手筆記..." oninput="saveNote()"></textarea>
+        </div>
     </div>
 </div>
 
@@ -164,6 +177,11 @@
     const palette = ["#F28695", "#FFC5BB", "#FFB6BD", "#EA7878", "#D06483", "#DCC1E0", "#D9C7EF", "#CBF1F7", "#AFD1F1", "#AF7351"];
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
+
+    function init() {
+        initColorPicker(); initHubUI(); initDraggable(); loadOrder();
+        document.getElementById("noteArea").value = hubs[currentHubName].note || "";
+    }
 
     window.saveNote = () => {
         hubs[currentHubName].note = document.getElementById("noteArea").value;
@@ -248,19 +266,18 @@
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        const centerX = 170, centerY = 105, r1 = 85;
-        const x1 = centerX + r1 * Math.cos(rad), y1 = centerY + r1 * Math.sin(rad);
+        const centerX = 170, centerY = 105;
+        const x1 = centerX + 85 * Math.cos(rad), y1 = centerY + 85 * Math.sin(rad);
         let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
         if (Math.abs(Math.cos(rad)) < 0.5) x2 = centerX + (x1 >= centerX ? 85 : -85);
         const yLimit = 55;
         if (y2 > centerY + yLimit) y2 = centerY + yLimit;
         if (y2 < centerY - yLimit) y2 = centerY - yLimit;
         const isRight = x1 >= centerX, xLabel = isRight ? 330 : 10;
-        const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
         line.setAttribute("points", `${x1},${y1} ${x2},${y2} ${xLabel},${y2}`);
-        line.setAttribute("stroke", color); line.setAttribute("fill", "none"); 
-        line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
+        line.setAttribute("stroke", (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF");
+        line.setAttribute("fill", "none"); line.setAttribute("stroke-dasharray", "3,2"); line.setAttribute("stroke-width", "1.5");
         svg.appendChild(line);
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 4); t1.setAttribute("fill", "#FFF");
@@ -314,6 +331,7 @@
         }
     });
 
+    // 🛡️ 模組拖曳
     function initDraggable() {
         const container = document.getElementById('modContainer');
         document.querySelectorAll('.draggable-mod').forEach(mod => {
@@ -321,14 +339,18 @@
                 if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName) || e.target.closest('.hub-btn')) { e.preventDefault(); return; }
                 mod.classList.add('dragging');
             });
-            mod.addEventListener('dragend', () => { mod.classList.remove('dragging'); saveOrder(); });
+            mod.addEventListener('dragend', () => {
+                mod.classList.remove('dragging');
+                saveOrder();
+            });
         });
         container.addEventListener('dragover', e => {
             e.preventDefault();
             const dragging = document.querySelector('.dragging');
             if (!dragging) return;
             const afterEl = getDragAfterEl(container, e.clientY);
-            afterEl == null ? container.appendChild(dragging) : container.insertBefore(dragging, afterEl);
+            if (afterEl == null) container.appendChild(dragging);
+            else container.insertBefore(dragging, afterEl);
         });
     }
     function getDragAfterEl(c, y) {
@@ -347,13 +369,12 @@
     }
 
     window.switchHub = (n) => { 
-        currentHubName = n; 
-        localStorage.setItem("windsorActiveHub", n); 
+        currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
         initHubUI(); 
         document.getElementById("noteArea").value = hubs[n].note || "";
         updateRing("A",""); updateRing("B",""); 
     };
-    window.addNewHub = () => { const n = prompt("帳本名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
+    window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
@@ -371,12 +392,9 @@
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
     window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("數據複製成功"); };
-    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效代碼"); } };
+    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效"); } };
 
-    window.onload = () => { 
-        loadOrder(); initColorPicker(); initHubUI(); initDraggable(); 
-        document.getElementById("noteArea").value = hubs[currentHubName].note || "";
-    };
+    window.onload = init;
 </script>
 </body>
 </html>
