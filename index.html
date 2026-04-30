@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v15.6</title>
+    <title>Windsor Hub v15.8</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 佈局：左空、中帳、右筆 */
+        /* 佈局結構 */
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; box-sizing: border-box; }
         .left-filler { flex: 1; min-width: 10px; pointer-events: none; } 
-        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; }
+        .main-container { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; z-index: 10; min-height: 100vh; position: relative; }
         .right-column { flex: 1; display: flex; justify-content: flex-start; padding-left: 30px; } 
         
         .side-note { width: 320px; background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; box-sizing: border-box; position: sticky; top: 20px; height: fit-content; transition: 0.3s; }
@@ -29,15 +29,15 @@
         header { text-align: center; margin: 20px 0 35px 0; width: 100%; pointer-events: none; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
         
-        /* 🛡️ 拖曳模組：強化可見度與抓取感 */
-        .draggable-mod { width: 100%; cursor: grab; transition: transform 0.2s; user-select: none; position: relative; margin-bottom: 25px; box-sizing: border-box; }
+        /* 🛡️ 物理拖曳樣式 */
+        .draggable-mod { width: 100%; position: relative; margin-bottom: 25px; box-sizing: border-box; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
         .draggable-mod:active { cursor: grabbing; }
-        .dragging { opacity: 0.4; transform: scale(0.96); border: 2px solid #FF8C00 !important; border-radius: 30px; }
+        .sortable-ghost { opacity: 0.3; transform: scale(0.9); border: 2px dashed #FF8C00 !important; }
         
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; pointer-events: auto; }
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; pointer-events: none; }
         .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
@@ -73,7 +73,6 @@
         .color-opt.active { border-color: #FFF; transform: scale(1.1); }
         
         .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
-        
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
         
@@ -83,14 +82,13 @@
 </head>
 <body onclick="clearLeads(event)">
 
-<div class="layout-wrapper" id="masterWrapper">
+<div class="layout-wrapper">
     <div class="left-filler"></div>
 
-    <div class="main-container" id="dragContainer">
+    <div class="main-container" id="modContainer">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 模組區段：已強化拖曳觸發 -->
-        <div class="draggable-mod" id="modHub" draggable="true">
+        <div class="draggable-mod" id="modHub">
             <div class="hub-ctrl" onclick="event.stopPropagation()">
                 <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
                 <div style="display:flex">
@@ -101,7 +99,7 @@
             </div>
         </div>
         
-        <div class="draggable-mod" id="modA" draggable="true">
+        <div class="draggable-mod" id="modA">
             <div class="orb-area">
                 <div class="orb-header">
                     <span class="orb-id">A</span>
@@ -125,7 +123,7 @@
             </div>
         </div>
 
-        <div class="draggable-mod" id="modInput" draggable="true">
+        <div class="draggable-mod" id="modInput">
             <div class="section" onclick="event.stopPropagation()">
                 <div class="mode-switch">
                     <button id="btnDate" class="mode-btn active" onclick="setMode('date')">日期模式</button>
@@ -141,7 +139,7 @@
             </div>
         </div>
 
-        <div class="draggable-mod" id="modB" draggable="true">
+        <div class="draggable-mod" id="modB">
             <div class="orb-area">
                 <div class="orb-header">
                     <span class="orb-id">B</span>
@@ -165,7 +163,7 @@
             </div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.6 DRAG ENGINE RESTORED</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V15.8 PHYSICS ENGINE</div>
     </div>
 
     <div class="right-column">
@@ -181,6 +179,9 @@
     <button class="gate-btn" onclick="exportData()">數據出口 (EXPORT)</button>
 </div>
 
+<!-- 🛡️ 引入物理排序引擎 -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {"data": {}, "note": ""}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
@@ -188,71 +189,25 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 拖曳引擎全面重啟
-    function initDraggable() {
-        const container = document.getElementById('dragContainer');
-        const mods = document.querySelectorAll('.draggable-mod');
+    function init() {
+        initColorPicker(); initHubUI(); initPhysicsDrag(); loadOrder();
+        document.getElementById("noteArea").value = hubs[currentHubName].note || "";
+    }
 
-        mods.forEach(mod => {
-            mod.addEventListener('dragstart', (e) => {
-                // 排除輸入框與按鈕觸發
-                if (['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
-                    e.preventDefault();
-                    return;
-                }
-                mod.classList.add('dragging');
-            });
-
-            mod.addEventListener('dragend', () => {
-                mod.classList.remove('dragging');
+    // 🛡️ 物理排序引擎初始化 (取代 draggable="true")
+    function initPhysicsDrag() {
+        const container = document.getElementById('modContainer');
+        Sortable.create(container, {
+            animation: 350,
+            ghostClass: 'sortable-ghost',
+            filter: 'input, button, select, textarea, .time-ctrl-group, header', // 排除這些元素觸發拖曳
+            preventOnFilter: false,
+            onEnd: function() {
                 saveOrder();
-            });
-        });
-
-        container.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const draggingEl = document.querySelector('.dragging');
-            if (!draggingEl) return;
-            
-            const afterEl = getDragAfterEl(container, e.clientY);
-            if (afterEl == null) {
-                container.appendChild(draggingEl);
-            } else {
-                container.insertBefore(draggingEl, afterEl);
             }
         });
     }
 
-    function getDragAfterEl(container, y) {
-        const draggableEls = [...container.querySelectorAll('.draggable-mod:not(.dragging)')];
-        return draggableEls.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: -Infinity }).element;
-    }
-
-    function saveOrder() {
-        const order = [...document.querySelectorAll('.draggable-mod')].map(el => el.id);
-        localStorage.setItem('windsorModOrder_v2', JSON.stringify(order));
-    }
-
-    function loadOrder() {
-        const order = JSON.parse(localStorage.getItem('windsorModOrder_v2'));
-        if (order) {
-            const container = document.getElementById('dragContainer');
-            order.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) container.appendChild(el);
-            });
-        }
-    }
-
-    // 🛡️ 編輯名稱功能
     window.renameDimension = (selectId) => {
         const oldName = document.getElementById(selectId).value;
         if (!oldName) { alert("選取要更名的維度！"); return; }
@@ -315,7 +270,7 @@
         const cost = safeEval(document.getElementById("inputAmt").value) || 0;
         const nowStr = document.getElementById("inputNow").value;
         const current = nowStr ? safeEval(nowStr) : cost;
-        if (!dim) { alert("請輸入日期或類別"); return; }
+        if (!dim) { alert("請輸入維度"); return; }
         if (!hubs[currentHubName].data) hubs[currentHubName].data = {};
         if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = [];
         const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" };
@@ -417,6 +372,18 @@
         }
     });
 
+    function saveOrder() { 
+        const order = [...document.getElementById('modContainer').querySelectorAll('.draggable-mod')].map(el => el.id);
+        localStorage.setItem('windsorModOrder_v3', JSON.stringify(order)); 
+    }
+    function loadOrder() { 
+        const order = JSON.parse(localStorage.getItem('windsorModOrder_v3'));
+        if (order) {
+            const container = document.getElementById('modContainer');
+            order.forEach(id => { const el = document.getElementById(id); if (el) container.appendChild(el); });
+        }
+    }
+
     window.switchHub = (n) => { 
         currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
         initHubUI(); 
@@ -427,7 +394,7 @@
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
-    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
+    window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() {
         const dims = Object.keys(hubs[currentHubName].data || {}).sort();
         ["selA", "selB"].forEach(id => {
@@ -441,12 +408,9 @@
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
     window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("數據複製成功"); };
-    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效"); } };
+    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效代碼"); } };
 
-    window.onload = () => {
-        initColorPicker(); initHubUI(); loadOrder(); initDraggable();
-        document.getElementById("noteArea").value = hubs[currentHubName].note || "";
-    };
+    window.onload = init;
 </script>
 </body>
 </html>
