@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v20.5</title>
+    <title>Windsor Hub v20.8</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         * { box-sizing: border-box; }
@@ -26,7 +26,9 @@
             .side-note { position: static; }
         }
 
-        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; transition: border-color 0.2s; }
+        /* 🛡️ 核心修復：確保插槽內部實體絕對置中 */
+        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; transition: border-color 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .slot-body { width: 100%; display: flex; justify-content: center; } /* 強制內容水平置中 */
         .slot-container.active-slot { border-color: transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; }
         .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
@@ -37,8 +39,10 @@
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 25px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; }
-        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; }
+        /* 模組組件內容：維持 380px 的寬度規範 */
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; max-width: 380px; }
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; max-width: 380px; }
+        
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .orb-id { font-size: 24px; font-weight: 900; }
         .time-ctrl-group { display: flex; gap: 5px; }
@@ -47,7 +51,8 @@
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify: center; align-items: center; left: -10px; }
+        /* 🛡️ 圓環置中核心修復 */
+        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; transition: background 0.3s ease; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .chart-center { z-index: 100; text-align: center; pointer-events: none; width: 140px; position: relative; background: transparent; }
@@ -104,7 +109,7 @@
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
             </select>
-            <div class="slot-body" style="width:100%"></div>
+            <div class="slot-body"></div>
         </div>
 
         <div class="slot-container" id="slot2">
@@ -115,7 +120,7 @@
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
             </select>
-            <div class="slot-body" style="width:100%"></div>
+            <div class="slot-body"></div>
         </div>
 
         <div class="slot-container" id="slot3">
@@ -126,10 +131,10 @@
                 <option value="modB">帳本 B</option>
                 <option value="modInput">輸入項</option>
             </select>
-            <div class="slot-body" style="width:100%"></div>
+            <div class="slot-body"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V20.5 QUANTUM SWAP</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V20.8 CENTER ALIGNED</div>
     </div>
 
     <div class="right-column">
@@ -204,7 +209,6 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 核心：量子糾纏對調引擎
     function quantumSwapAssign(slotNum, moduleId) {
         const vault = document.getElementById('physical-vault');
         const currentSlotBody = document.querySelector(`#slot${slotNum} .slot-body`);
@@ -216,44 +220,35 @@
             return;
         }
 
-        // 偵測目標模組是否已存在於其他插槽
         let otherSlotNum = null;
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
             const otherSel = document.querySelector(`#slot${i} .slot-selector`);
             if (otherSel.value === moduleId) {
-                otherSlotNum = i;
-                break;
+                otherSlotNum = i; break;
             }
         }
 
         if (otherSlotNum) {
-            // 🔄 執行位置對調邏輯
             const otherSlotBody = document.querySelector(`#slot${otherSlotNum} .slot-body`);
             const otherSelector = document.querySelector(`#slot${otherSlotNum} .slot-selector`);
-
-            // 1. 如果當前插槽有東西，把它移到對方的插槽去
             if (currentSlotBody.firstChild) {
                 const tempModule = currentSlotBody.firstChild;
                 otherSlotBody.appendChild(tempModule);
                 otherSelector.value = currentModuleId;
                 document.getElementById(`slot${otherSlotNum}`).classList.add('active-slot');
             } else {
-                // 如果當前插槽是空的，對方就變空
                 otherSelector.value = 'none';
                 document.getElementById(`slot${otherSlotNum}`).classList.remove('active-slot');
             }
         } else {
-            // 正常的覆蓋邏輯（如果原插槽有東西則退回庫房）
             if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
         }
 
-        // 2. 將目標模組移入當前插槽
         const targetModule = document.getElementById(moduleId);
         currentSlotBody.appendChild(targetModule);
         document.getElementById(`slot${slotNum}`).classList.add('active-slot');
 
-        // 🛡️ 同步數據記憶與圖表
         requestAnimationFrame(() => {
             if (moduleId === 'modA' || currentModuleId === 'modA') updateRing("A", hubs[currentHubName].activeA);
             if (moduleId === 'modB' || currentModuleId === 'modB') updateRing("B", hubs[currentHubName].activeB);
@@ -274,10 +269,8 @@
             sel.value = 'none';
             document.getElementById(`slot${i}`).classList.remove('active-slot');
         }
-        currentHubName = n; 
-        localStorage.setItem("windsorActiveHub", n); 
-        initHubUI(); 
-        document.getElementById("noteArea").value = hubs[n].note || "";
+        currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
+        initHubUI(); document.getElementById("noteArea").value = hubs[n].note || "";
         clearLeads();
     };
 
@@ -370,10 +363,6 @@
         const centerX = 170, centerY = 105, r1 = 85;
         const x1 = centerX + r1 * Math.cos(rad), y1 = centerY + r1 * Math.sin(rad);
         let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
-        if (Math.abs(Math.cos(rad)) < 0.5) x2 = centerX + (x1 >= centerX ? 85 : -85);
-        const yLimit = 55;
-        if (y2 > centerY + yLimit) y2 = centerY + yLimit;
-        if (y2 < centerY - yLimit) y2 = centerY - yLimit;
         const isRight = x1 >= centerX, xLabel = isRight ? 330 : 10;
         const color = (sector.hasNow && sector.amt < sector.cost) ? "#444" : "#FFF";
         const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
