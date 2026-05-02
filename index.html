@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v21.0</title>
+    <title>Windsor Hub v21.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         * { box-sizing: border-box; }
@@ -26,10 +26,9 @@
             .side-note { position: static; }
         }
 
-        /* 插槽系統 */
         .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; transition: border-color 0.2s; display: flex; flex-direction: column; align-items: center; }
         .slot-body { width: 100%; display: flex; justify-content: center; }
-        .slot-container.active-slot { border: 2px solid transparent; }
+        .slot-container.active-slot { border-color: transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; }
         .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
@@ -39,7 +38,6 @@
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 25px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        /* 模組組件 */
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; max-width: 380px; }
         .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; max-width: 380px; }
         
@@ -51,8 +49,8 @@
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        /* 🛡️ 圓環與幾何約束引線 */
-        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        /* 🛡️ 完全復刻 v19.8 引線座標系統 */
+        .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .chart-center { z-index: 100; text-align: center; pointer-events: none; width: 140px; position: relative; background: transparent; }
@@ -78,6 +76,7 @@
         
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
+        
         .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; pointer-events: none; }
         .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
 
@@ -134,7 +133,7 @@
             <div class="slot-body"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V21.0 GEOMETRIC CONSTRAINTS</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V21.2 CLASSIC LEAD LINES (v19.8)</div>
     </div>
 
     <div class="right-column">
@@ -209,59 +208,16 @@
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    function quantumSwapAssign(slotNum, moduleId) {
-        const vault = document.getElementById('physical-vault');
-        const currentSlotBody = document.querySelector(`#slot${slotNum} .slot-body`);
-        const currentModuleId = currentSlotBody.firstChild ? currentSlotBody.firstChild.id : 'none';
-
-        if (moduleId === 'none') {
-            if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
-            document.getElementById(`slot${slotNum}`).classList.remove('active-slot');
-            return;
-        }
-
-        let otherSlotNum = null;
-        for (let i = 1; i <= 3; i++) {
-            if (i === slotNum) continue;
-            const otherSel = document.querySelector(`#slot${i} .slot-selector`);
-            if (otherSel.value === moduleId) { otherSlotNum = i; break; }
-        }
-
-        if (otherSlotNum) {
-            const otherSlotBody = document.querySelector(`#slot${otherSlotNum} .slot-body`);
-            const otherSelector = document.querySelector(`#slot${otherSlotNum} .slot-selector`);
-            if (currentSlotBody.firstChild) {
-                const tempModule = currentSlotBody.firstChild;
-                otherSlotBody.appendChild(tempModule);
-                otherSelector.value = currentModuleId;
-                document.getElementById(`slot${otherSlotNum}`).classList.add('active-slot');
-            } else {
-                otherSelector.value = 'none';
-                document.getElementById(`slot${otherSlotNum}`).classList.remove('active-slot');
-            }
-        } else {
-            if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
-        }
-
-        const targetModule = document.getElementById(moduleId);
-        currentSlotBody.appendChild(targetModule);
-        document.getElementById(`slot${slotNum}`).classList.add('active-slot');
-
-        requestAnimationFrame(() => {
-            if (moduleId === 'modA' || currentModuleId === 'modA') updateRing("A", hubs[currentHubName].activeA);
-            if (moduleId === 'modB' || currentModuleId === 'modB') updateRing("B", hubs[currentHubName].activeB);
-        });
-    }
-
-    // 🛡️ v19.8 經典引線計算公式植入
+    // 🛡️ v19.8 經典引線計算函式 (完全對標 v19.8)
     function drawLead(id, sector) {
         const svg = document.getElementById("leads" + id); svg.innerHTML = "";
         const mid = sector.start + (sector.end - sector.start) / 2, rad = (mid - 90) * (Math.PI / 180);
-        const centerX = 170, centerY = 105, r1 = 85; /* 對齊 SVG viewBox="0 0 340 210" */
+        const centerX = 170, centerY = 105, r1 = 85;
         const x1 = centerX + r1 * Math.cos(rad), y1 = centerY + r1 * Math.sin(rad);
         let x2 = centerX + 120 * Math.cos(rad), y2 = centerY + 120 * Math.sin(rad);
         
-        /* 🛡️ 強制邊界約束：yLimit 確保文字不跑出格子 */
+        // 🛡️ v19.8 精髓：邊界約束與轉折邏輯
+        if (Math.abs(Math.cos(rad)) < 0.5) x2 = centerX + (x1 >= centerX ? 85 : -85);
         const yLimit = 55;
         if (y2 > centerY + yLimit) y2 = centerY + yLimit;
         if (y2 < centerY - yLimit) y2 = centerY - yLimit;
@@ -294,25 +250,54 @@
         t3.textContent = percStr; svg.appendChild(t3);
     }
 
-    window.registerActiveDim = (id, val) => {
-        hubs[currentHubName]["active" + id] = val;
-        localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-    };
+    function quantumSwapAssign(slotNum, moduleId) {
+        const vault = document.getElementById('physical-vault');
+        const currentSlotBody = document.querySelector(`#slot${slotNum} .slot-body`);
+        const currentModuleId = currentSlotBody.firstChild ? currentSlotBody.firstChild.id : 'none';
+        if (moduleId === 'none') {
+            if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
+            document.getElementById(`slot${slotNum}`).classList.remove('active-slot'); return;
+        }
+        let otherSlotNum = null;
+        for (let i = 1; i <= 3; i++) {
+            if (i === slotNum) continue;
+            const otherSel = document.querySelector(`#slot${i} .slot-selector`);
+            if (otherSel.value === moduleId) { otherSlotNum = i; break; }
+        }
+        if (otherSlotNum) {
+            const otherSlotBody = document.querySelector(`#slot${otherSlotNum} .slot-body`);
+            const otherSelector = document.querySelector(`#slot${otherSlotNum} .slot-selector`);
+            if (currentSlotBody.firstChild) {
+                const tempModule = currentSlotBody.firstChild;
+                otherSlotBody.appendChild(tempModule);
+                otherSelector.value = currentModuleId;
+                document.getElementById(`slot${otherSlotNum}`).classList.add('active-slot');
+            } else {
+                otherSelector.value = 'none';
+                document.getElementById(`slot${otherSlotNum}`).classList.remove('active-slot');
+            }
+        } else { if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild); }
+        const targetModule = document.getElementById(moduleId);
+        currentSlotBody.appendChild(targetModule);
+        document.getElementById(`slot${slotNum}`).classList.add('active-slot');
+        requestAnimationFrame(() => {
+            if (moduleId === 'modA' || currentModuleId === 'modA') updateRing("A", hubs[currentHubName].activeA);
+            if (moduleId === 'modB' || currentModuleId === 'modB') updateRing("B", hubs[currentHubName].activeB);
+        });
+    }
 
+    window.registerActiveDim = (id, val) => { hubs[currentHubName]["active" + id] = val; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); };
     window.switchHub = (n) => { 
         const vault = document.getElementById('physical-vault');
         for(let i=1; i<=3; i++) {
             const body = document.querySelector(`#slot${i} .slot-body`);
             const sel = document.querySelector(`#slot${i} .slot-selector`);
             if (body.firstChild) vault.appendChild(body.firstChild);
-            sel.value = 'none';
-            document.getElementById(`slot${i}`).classList.remove('active-slot');
+            sel.value = 'none'; document.getElementById(`slot${i}`).classList.remove('active-slot');
         }
-        currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
-        initHubUI(); document.getElementById("noteArea").value = hubs[n].note || "";
-        clearLeads();
+        currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); 
+        document.getElementById("noteArea").value = hubs[n].note || ""; clearLeads();
     };
-
     function init() { initColorPicker(); initHubUI(); document.getElementById("noteArea").value = hubs[currentHubName].note || ""; }
     function fmtWan(val) { let n = parseFloat(val) || 0; if (Math.abs(n) >= 10000) return (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + "萬"; return n.toLocaleString(); }
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
