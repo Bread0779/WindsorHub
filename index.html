@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v22.0</title>
+    <title>Windsor Hub v22.5</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         * { box-sizing: border-box; }
-        .donut-ring, .slot-container { will-change: transform, opacity; }
+        
+        /* 🚀 性能預載 */
+        .donut-ring, .slot-container, .detail-item { will-change: transform; }
 
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; }
         .left-filler { flex: 1; min-width: 10px; } 
@@ -26,8 +28,8 @@
             .side-note { position: static; }
         }
 
-        /* 插槽系統 */
-        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; transition: border-color 0.2s; display: flex; flex-direction: column; align-items: center; }
+        /* 🛡️ 插槽系統 */
+        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; display: flex; flex-direction: column; align-items: center; }
         .slot-body { width: 100%; display: flex; justify-content: center; }
         .slot-container.active-slot { border-color: transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; }
@@ -41,8 +43,16 @@
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; max-width: 380px; }
         .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; max-width: 380px; }
         .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .orb-id { font-size: 24px; font-weight: 900; }
+
+        /* 🛡️ v21.8 經典維度控制組樣式回歸 */
+        .time-ctrl-group { display: flex; gap: 5px; }
+        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
+        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        /* 圖表置中與數字圖層 */
+        /* 圓環與數字對中 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
@@ -50,11 +60,11 @@
         .center-val { font-weight: bold; color: #39FF14; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; transition: 0.2s; } 
         .center-val.exact-mode { font-size: 18px; color: #FFF; }
 
-        /* 🛡️ 明細列表拖曳樣式 */
+        /* 🛡️ 列表拖曳與效能優化樣式 */
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 250px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 25; }
-        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: grab; transition: background 0.2s; background: #000; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: grab; background: #000; user-select: none; }
         .detail-item:active { cursor: grabbing; }
-        .detail-item.dragging { opacity: 0.5; background: #111; border: 1px dashed #FF8C00; }
+        .detail-item.dragging { opacity: 0.4; border: 1px dashed #FF8C00; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
 
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.4); border-width: 3px; }
@@ -62,7 +72,6 @@
         .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
         input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
         .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
         .color-opt.active { border-color: #FFF; transform: scale(1.1); }
@@ -122,7 +131,7 @@
             </select>
             <div class="slot-body"></div>
         </div>
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V22.0 DETAIL SORTABLE</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V22.5 PERFORMANCE PEAK</div>
     </div>
 
     <div class="right-column">
@@ -152,7 +161,6 @@
                 <div id="valA" class="center-val">$ 0</div>
             </div>
         </div>
-        <!-- 🛡️ A 明細列表：支持拖曳 -->
         <div id="listA" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
 
@@ -188,7 +196,6 @@
                 <div id="valB" class="center-val">$ 0</div>
             </div>
         </div>
-        <!-- 🛡️ B 明細列表：支持拖曳 -->
         <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
 </div>
@@ -205,35 +212,30 @@
     let selectedColor = palette[0], inputMode = 'date', showExact = { A: false, B: false };
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 核心：點擊切換精確數字
-    window.toggleExactMode = (id, e) => {
-        e.stopPropagation(); showExact[id] = !showExact[id];
-        updateRing(id, document.getElementById("sel"+id).value);
-        document.getElementById("val"+id).classList.toggle('exact-mode', showExact[id]);
-    };
+    // 🛡️ 效能優化：全局拖曳管理（單一監聽器）
+    let dragEl = null, dragIdSuffix = null;
 
-    // 🛡️ 拖曳排序引擎
-    function initListDrag(listId, idSuffix) {
-        const list = document.getElementById(listId);
-        let dragEl = null;
-
-        list.addEventListener('dragstart', (e) => {
+    function handleGlobalDrag() {
+        document.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('detail-item')) {
                 dragEl = e.target;
+                dragIdSuffix = e.target.parentElement.id.slice(-1);
                 e.target.classList.add('dragging');
             }
         });
 
-        list.addEventListener('dragend', (e) => {
+        document.addEventListener('dragend', (e) => {
             if (dragEl) {
                 dragEl.classList.remove('dragging');
-                saveNewOrder(idSuffix);
-                dragEl = null;
+                saveNewOrder(dragIdSuffix);
+                dragEl = null; dragIdSuffix = null;
             }
         });
 
-        list.addEventListener('dragover', (e) => {
+        document.addEventListener('dragover', (e) => {
+            if (!dragEl) return;
             e.preventDefault();
+            const list = document.getElementById("list" + dragIdSuffix);
             const afterEl = getDragAfterElement(list, e.clientY);
             if (afterEl == null) list.appendChild(dragEl);
             else list.insertBefore(dragEl, afterEl);
@@ -255,29 +257,34 @@
         if (!dim || !hubs[currentHubName].data[dim]) return;
         const listEl = document.getElementById("list" + idSuffix);
         const newOrderNames = [...listEl.querySelectorAll('.detail-item')].map(el => el.dataset.name);
-        
-        // 根據 DOM 順序重新排列數據數組
         const oldData = hubs[currentHubName].data[dim];
-        const sortedData = newOrderNames.map(name => oldData.find(i => i.name === name));
-        
-        hubs[currentHubName].data[dim] = sortedData;
+        hubs[currentHubName].data[dim] = newOrderNames.map(name => oldData.find(i => i.name === name));
         localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
-        updateRing(idSuffix, dim); // 重新繪製圓環（若有需要顏色連動）
+        updateRing(idSuffix, dim);
     }
+
+    window.toggleExactMode = (id, e) => {
+        e.stopPropagation(); showExact[id] = !showExact[id];
+        updateRing(id, document.getElementById("sel"+id).value);
+        document.getElementById("val"+id).classList.toggle('exact-mode', showExact[id]);
+    };
 
     function quantumSwapAssign(slotNum, moduleId) {
         const vault = document.getElementById('physical-vault');
         const currentSlotBody = document.querySelector(`#slot${slotNum} .slot-body`);
         const currentModuleId = currentSlotBody.firstChild ? currentSlotBody.firstChild.id : 'none';
+
         if (moduleId === 'none') {
             if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
             document.getElementById(`slot${slotNum}`).classList.remove('active-slot'); return;
         }
+
         let otherSlotNum = null;
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
             if (document.querySelector(`#slot${i} .slot-selector`).value === moduleId) { otherSlotNum = i; break; }
         }
+
         if (otherSlotNum) {
             const otherSlotBody = document.querySelector(`#slot${otherSlotNum} .slot-body`);
             const otherSelector = document.querySelector(`#slot${otherSlotNum} .slot-selector`);
@@ -289,8 +296,10 @@
                 otherSelector.value = 'none'; document.getElementById(`slot${otherSlotNum}`).classList.remove('active-slot');
             }
         } else if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
+
         currentSlotBody.appendChild(document.getElementById(moduleId));
         document.getElementById(`slot${slotNum}`).classList.add('active-slot');
+
         requestAnimationFrame(() => {
             refreshSelectors();
             if (moduleId === 'modA' || currentModuleId === 'modA') {
@@ -319,14 +328,12 @@
         svg.appendChild(line);
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 4); t1.setAttribute("fill", "#FFF");
-        t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "bold"); 
-        t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
+        t1.setAttribute("font-size", "12px"); t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 10); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
-        t2.setAttribute("text-anchor", isRight ? "end" : "start");
-        t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
+        t2.setAttribute("text-anchor", isRight ? "end" : "start"); t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("text-anchor", isRight ? "end" : "start");
         t3.textContent = `${((sector.amt / sector.total) * 100).toFixed(1)}%`; svg.appendChild(t3);
@@ -349,7 +356,6 @@
                     <button class="item-del-btn" onclick="event.stopPropagation(); removeItem('${dim}', ${idx}, '${id}')">✕</button>
                 </div>`;
             }).join('');
-            initListDrag("list" + id, id); // 🛡️ 每次刷新列表都重啟拖曳監聽
             if (dimTotal === 0) { ringEl.style.background = "#080808"; return; }
             let curD = 0;
             ringEl.style.background = `conic-gradient(${items.map((i, idx) => {
@@ -373,7 +379,11 @@
         currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); 
         document.getElementById("noteArea").value = hubs[n].note || ""; clearLeads();
     };
-    function init() { initColorPicker(); initHubUI(); document.getElementById("noteArea").value = hubs[currentHubName].note || ""; }
+
+    function init() { 
+        initColorPicker(); initHubUI(); handleGlobalDrag(); // 🛡️ 啟動高效單一監聽器
+        document.getElementById("noteArea").value = hubs[currentHubName].note || ""; 
+    }
     function fmtWan(val) { let n = parseFloat(val) || 0; if (Math.abs(n) >= 10000) return (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + "萬"; return n.toLocaleString(); }
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initColorPicker() { const g = document.getElementById("colorPicker"); g.innerHTML = palette.map(c => `<div class="color-opt" style="background:${c}" onclick="selectColor('${c}', this)"></div>`).join(''); g.children[0].classList.add("active"); }
