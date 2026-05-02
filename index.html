@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v19.8</title>
+    <title>Windsor Hub v19.9</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
@@ -25,9 +25,9 @@
             .side-note { width: 100%; position: static; }
         }
 
-        /* 插槽系統 */
-        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 140px; display: flex; flex-direction: column; }
-        .slot-container.active-slot { border: 2px solid transparent; }
+        /* 🛡️ 專業插槽樣式 */
+        .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; box-sizing: border-box; position: relative; min-height: 140px; display: flex; flex-direction: column; transition: 0.3s; }
+        .slot-container.active-slot { border-color: transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; letter-spacing: 1px; }
         .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
@@ -37,7 +37,7 @@
         .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; margin-bottom: 25px; }
         .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
-        /* 模組內容 */
+        /* 模組基本內容 */
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; box-sizing: border-box; }
         .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; box-sizing: border-box; width: 100%; }
         
@@ -49,20 +49,11 @@
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        /* 🛡️ 圓環與最高層級數字 (視覺覆蓋已移除) */
+        /* 圓環與層級數字 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; left: -10px; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        
-        /* 🛡️ 總金額數字：移除背景，僅保留層級置頂 */
-        .chart-center { 
-            z-index: 100; /* 置於圓環(5)和引導線(10)之上 */
-            text-align: center; 
-            pointer-events: none; 
-            width: 140px; 
-            position: relative; 
-            background: transparent; /* 🛡️ 功能移除：背景改回透明 */
-        }
+        .chart-center { z-index: 100; text-align: center; pointer-events: none; width: 140px; position: relative; background: transparent; }
         .center-val { font-weight: bold; color: #39FF14; margin-top: 5px; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; } 
         
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 180px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 25; }
@@ -73,7 +64,7 @@
         .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
         
-        /* 白色日曆圖示修復 */
+        /* 白色日曆 */
         input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; box-sizing: border-box; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
@@ -108,6 +99,7 @@
             </div>
         </div>
 
+        <!-- 🛡️ 插槽系統：切換 Hub 時清場，選取時還原內容 -->
         <div class="slot-container" id="slot1">
             <span class="slot-label">POSITION 01</span>
             <select class="slot-selector" onchange="performPhysicalMove(1, this.value)">
@@ -141,7 +133,7 @@
             <div class="slot-body" style="width:100%"></div>
         </div>
         
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V19.8 PURE OVERLAY</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V19.9 CONTEXT ISOLATION</div>
     </div>
 
     <div class="right-column">
@@ -153,11 +145,12 @@
 </div>
 
 <div id="physical-vault">
+    <!-- 模組 A、B、輸入項實體保持在保險箱中 -->
     <div class="orb-area" id="modA">
         <div class="orb-header"><span class="orb-id">A</span>
             <div class="time-ctrl-group" onclick="event.stopPropagation()">
                 <div class="time-ctrl">
-                    <select class="time-select" id="selA" onchange="updateRing('A', this.value)"><option value="">選取維度</option></select>
+                    <select class="time-select" id="selA" onchange="registerActiveDim('A', this.value); updateRing('A', this.value)"><option value="">選取維度</option></select>
                     <button class="del-x" onclick="deleteDim('A')">✕</button>
                 </div>
                 <button class="mini-btn" onclick="renameDimension('selA')">✎</button>
@@ -166,10 +159,7 @@
         <div class="chart-container">
             <div id="ringA" class="donut-ring" onclick="handleRingClick(event, 'A')"></div>
             <svg id="leadsA" class="leadline-layer" viewBox="0 0 340 210"></svg>
-            <div class="chart-center">
-                <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
-                <div id="valA" class="center-val">$ 0</div>
-            </div>
+            <div class="chart-center"><div id="valA" class="center-val">$ 0</div></div>
         </div>
         <div id="listA" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
@@ -192,7 +182,7 @@
         <div class="orb-header"><span class="orb-id">B</span>
             <div class="time-ctrl-group" onclick="event.stopPropagation()">
                 <div class="time-ctrl">
-                    <select class="time-select" id="selB" onchange="updateRing('B', this.value)"><option value="">選取維度</option></select>
+                    <select class="time-select" id="selB" onchange="registerActiveDim('B', this.value); updateRing('B', this.value)"><option value="">選取維度</option></select>
                     <button class="del-x" onclick="deleteDim('B')">✕</button>
                 </div>
                 <button class="mini-btn" onclick="renameDimension('selB')">✎</button>
@@ -201,10 +191,7 @@
         <div class="chart-container">
             <div id="ringB" class="donut-ring" onclick="handleRingClick(event, 'B')"></div>
             <svg id="leadsB" class="leadline-layer" viewBox="0 0 340 210"></svg>
-            <div class="chart-center">
-                <div style="font-size:10px;color:#888;text-transform:uppercase">總額</div>
-                <div id="valB" class="center-val">$ 0</div>
-            </div>
+            <div class="chart-center"><div id="valB" class="center-val">$ 0</div></div>
         </div>
         <div id="listB" class="detail-list" onclick="event.stopPropagation()"></div>
     </div>
@@ -216,19 +203,19 @@
 </div>
 
 <script>
-    let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {"data": {}, "note": ""}}');
+    let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {"data": {}, "note": "", "activeA": "", "activeB": ""}}');
     let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
     const palette = ["#F28695", "#FFC5BB", "#FFB6BD", "#EA7878", "#D06483", "#DCC1E0", "#D9C7EF", "#CBF1F7", "#AFD1F1", "#AF7351"];
     let selectedColor = palette[0], inputMode = 'date';
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
+    // 🛡️ 實體物理遷移引擎
     function performPhysicalMove(slotNum, moduleId) {
         const slotContainer = document.getElementById(`slot${slotNum}`);
         const slotBody = slotContainer.querySelector('.slot-body');
         if (moduleId === 'none') {
             if (slotBody.firstChild) document.getElementById('physical-vault').appendChild(slotBody.firstChild);
-            slotContainer.classList.remove('active-slot');
-            saveSlotMemory(); return;
+            slotContainer.classList.remove('active-slot'); return;
         }
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
@@ -244,31 +231,49 @@
         if (slotBody.firstChild) document.getElementById('physical-vault').appendChild(slotBody.firstChild);
         slotBody.appendChild(targetModule);
         slotContainer.classList.add('active-slot');
-        saveSlotMemory();
+        
+        // 🛡️ 記憶還原邏輯：當模組出現，立刻讀取該 Hub 對應的維度
         setTimeout(() => {
-            if (moduleId === 'modA') updateRing("A", document.getElementById("selA").value);
-            if (moduleId === 'modB') updateRing("B", document.getElementById("selB").value);
+            if (moduleId === 'modA') {
+                const lastA = hubs[currentHubName].activeA || "";
+                document.getElementById("selA").value = lastA;
+                updateRing("A", lastA);
+            }
+            if (moduleId === 'modB') {
+                const lastB = hubs[currentHubName].activeB || "";
+                document.getElementById("selB").value = lastB;
+                updateRing("B", lastB);
+            }
         }, 50);
     }
 
-    function saveSlotMemory() {
-        const config = {
-            p1: document.querySelector('#slot1 .slot-selector').value,
-            p2: document.querySelector('#slot2 .slot-selector').value,
-            p3: document.querySelector('#slot3 .slot-selector').value
-        };
-        localStorage.setItem('windsorSlotMemory_v19_8', JSON.stringify(config));
-    }
+    // 🛡️ 註冊目前啟動的維度
+    window.registerActiveDim = (id, val) => {
+        if (id === 'A') hubs[currentHubName].activeA = val;
+        if (id === 'B') hubs[currentHubName].activeB = val;
+        localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
+    };
 
-    function loadSlotMemory() {
-        const config = JSON.parse(localStorage.getItem('windsorSlotMemory_v19_8')) || { p1: 'modA', p2: 'modInput', p3: 'modB' };
-        setTimeout(() => { document.querySelector('#slot1 .slot-selector').value = config.p1; performPhysicalMove(1, config.p1); }, 50);
-        setTimeout(() => { document.querySelector('#slot2 .slot-selector').value = config.p2; performPhysicalMove(2, config.p2); }, 100);
-        setTimeout(() => { document.querySelector('#slot3 .slot-selector').value = config.p3; performPhysicalMove(3, config.p3); }, 150);
-    }
+    window.switchHub = (n) => { 
+        currentHubName = n; 
+        localStorage.setItem("windsorActiveHub", n); 
+        
+        // 🛡️ 核心變更：清空所有插槽
+        for(let i=1; i<=3; i++) {
+            const body = document.querySelector(`#slot${i} .slot-body`);
+            const sel = document.querySelector(`#slot${i} .slot-selector`);
+            if (body.firstChild) document.getElementById('physical-vault').appendChild(body.firstChild);
+            sel.value = 'none';
+            document.getElementById(`slot${i}`).classList.remove('active-slot');
+        }
+        
+        initHubUI(); 
+        document.getElementById("noteArea").value = hubs[n].note || "";
+        clearLeads(); // 清除殘留引導線
+    };
 
     function init() {
-        initColorPicker(); initHubUI(); loadSlotMemory();
+        initColorPicker(); initHubUI();
         document.getElementById("noteArea").value = hubs[currentHubName].note || "";
     }
 
@@ -290,8 +295,7 @@
         selectedColor = c;
         document.querySelectorAll('.color-opt').forEach(opt => {
             opt.classList.remove('active');
-            const bg = opt.style.backgroundColor;
-            if(bg === c || rgbToHex(bg).toUpperCase() === c.toUpperCase()) opt.classList.add('active');
+            if(opt.style.backgroundColor === c || rgbToHex(opt.style.backgroundColor).toUpperCase() === c.toUpperCase()) opt.classList.add('active');
         });
         if(el) el.classList.add('active');
     };
@@ -420,13 +424,7 @@
         }
     });
 
-    window.switchHub = (n) => { 
-        currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
-        initHubUI(); document.getElementById("noteArea").value = hubs[n].note || "";
-        updateRing("A", document.getElementById("selA").value); 
-        updateRing("B", document.getElementById("selB").value); 
-    };
-    window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
+    window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:"", activeA:"", activeB:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
     window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
     window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
