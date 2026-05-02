@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v23.0</title>
+    <title>Windsor Hub v23.2</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         * { box-sizing: border-box; }
@@ -26,63 +26,65 @@
             .side-note { position: static; }
         }
 
-        /* 🛡️ 平行帳本標籤系統 (可拖曳) */
-        .hub-nav-area { width: 100%; margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
-        .hub-tabs-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; -ms-overflow-style: none; }
+        /* 🛡️ 導航佈局校準 */
+        .hub-nav-area { width: 100%; margin-bottom: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .hub-tabs-container { display: flex; gap: 10px; overflow-x: auto; padding: 5px; scrollbar-width: none; }
         .hub-tabs-container::-webkit-scrollbar { display: none; }
         
-        .hub-tab { padding: 10px 18px; background: #111; border: 1px solid #333; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: grab; white-space: nowrap; transition: 0.2s; color: #888; display: flex; align-items: center; gap: 8px; }
-        .hub-tab.active { background: #000; border-color: #FFF; color: #FFF; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
-        .hub-tab.dragging { opacity: 0.4; border: 1px dashed #FF8C00; }
-        .hub-tab:active { cursor: grabbing; }
+        .hub-tab { padding: 12px 20px; background: #111; border: 1px solid #333; border-radius: 14px; font-size: 12px; font-weight: 900; cursor: grab; white-space: nowrap; transition: 0.2s; color: #666; display: flex; align-items: center; }
+        .hub-tab.active { background: #000; border-color: #FFF; color: #FFF; box-shadow: 0 5px 15px rgba(255,255,255,0.05); }
+        .hub-tab.dragging { opacity: 0.3; border: 1px dashed #FF8C00; }
 
-        .hub-ctrl-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 5px; }
-        .hub-action-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid #333; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+        .hub-ctrl-bar { display: flex; justify-content: space-between; width: 100%; padding: 0 5px; }
+        .hub-action-btn { background: rgba(255,255,255,0.03); color: #888; border: 1px solid #222; border-radius: 10px; padding: 8px 15px; cursor: pointer; font-size: 11px; transition: 0.2s; }
+        .hub-action-btn:hover { color: #FFF; border-color: #444; }
 
-        /* 插槽系統 */
+        /* 插槽樣式校準 */
         .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; display: flex; flex-direction: column; align-items: center; }
         .slot-body { width: 100%; display: flex; justify-content: center; }
         .slot-container.active-slot { border-color: transparent; }
-        .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; }
-        .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #444; font-size: 10px; padding: 0 8px; font-weight: bold; }
+        .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; }
 
-        header { text-align: center; margin: 20px 0 25px 0; width: 100%; }
-        h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
+        /* 🛡️ 模組內部樣式校準 (修復截圖跑版問題) */
+        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 25px; text-align: center; overflow: hidden; width: 380px; box-sizing: border-box; }
+        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; min-height: 40px; }
+        .orb-id { font-size: 24px; font-weight: 900; color: #FFF; }
         
-        .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; max-width: 380px; }
-        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; max-width: 380px; }
-        
-        .time-ctrl-group { display: flex; gap: 5px; }
-        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
-        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
-        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
-        
+        .time-ctrl-group { display: flex; gap: 8px; align-items: center; }
+        .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 10px; overflow: hidden; width: 150px; }
+        .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 10px; font-size: 13px; outline: none; cursor: pointer; text-align: center; }
+        .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 10px; width: 38px; height: 38px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .mini-btn:hover { background: #FFF; color: #000; }
+        .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 12px; font-size: 14px; cursor: pointer; border-left: 1px solid #FFF; }
+
+        /* 圓環與中心定位 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
+        .donut-ring { position: absolute; width: 165px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .chart-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; text-align: center; width: 140px; cursor: pointer; pointer-events: auto; }
-        .center-val { font-weight: bold; color: #39FF14; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; transition: 0.2s; } 
+        .center-val { font-weight: bold; color: #39FF14; text-shadow: 0 0 12px rgba(57,255,20,0.8); font-size: 24px; transition: 0.2s; } 
         .center-val.exact-mode { font-size: 18px; color: #FFF; }
 
-        .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 250px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 25; }
-        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: grab; background: #000; user-select: none; }
-        .detail-item.dragging { opacity: 0.4; border: 1px dashed #FF8C00; }
-        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
+        .detail-list { margin-top: 15px; text-align: left; font-size: 12px; border-top: 1px solid #222; padding-top: 15px; max-height: 250px; overflow-y: auto; scrollbar-width: none; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: grab; background: #000; user-select: none; }
+        .detail-item.dragging { opacity: 0.3; border: 1px dashed #FF8C00; }
+        .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 11px; }
 
+        .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 380px; box-sizing: border-box; }
         .section.edit-active { box-shadow: 0 0 25px rgba(255,255,255,0.4); border-width: 3px; }
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
-        .mode-btn { flex: 1; padding: 8px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        .mode-btn { flex: 1; padding: 10px; background: #111; color: #FFF; border: 1px solid #333; border-radius: 10px; font-size: 12px; cursor: pointer; }
         .mode-btn.active { background: #FFF; color: #000; font-weight: bold; }
-        input, #inputTag { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 12px; margin-bottom: 12px; font-family: monospace; outline: none; }
+        input, #inputTag { width: 100%; padding: 16px; background: #000; border: 1px solid #333; color: #FFF; border-radius: 14px; margin-bottom: 12px; font-family: monospace; outline: none; }
         .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
-        .color-opt { height: 25px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+        .color-opt { height: 28px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
         .color-opt.active { border-color: #FFF; transform: scale(1.1); }
-        .main-btn { width: 100%; padding: 16px; background: #FFF; color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
+        .main-btn { width: 100%; padding: 18px; background: #FFF; color: #000; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; letter-spacing: 2px; }
         
-        .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
-        .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
-        .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
+        .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #222; padding: 15px 0; display: flex; justify-content: center; gap: 15px; z-index: 100; }
+        .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 10px 20px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .footer { width: 100%; text-align: center; font-size: 10px; color: #333; margin-top: 50px; padding-bottom: 100px; }
         #physical-vault { display: none; }
     </style>
 </head>
@@ -93,15 +95,15 @@
     <div class="main-container">
         <header><h2>WINDSOR HUB</h2></header>
         
-        <!-- 🛡️ 平行帳本導覽區 -->
+        <!-- 🛡️ 平行帳本導覽校準 -->
         <div class="hub-nav-area">
             <div class="hub-tabs-container" id="hubTabs"></div>
             <div class="hub-ctrl-bar">
                 <div>
-                    <button class="hub-action-btn" onclick="addNewHub()">＋ 帳本</button>
-                    <button class="hub-action-btn" onclick="editCurrentHubName()">✎ 改名</button>
+                    <button class="hub-action-btn" onclick="addNewHub()">＋ NEW</button>
+                    <button class="hub-action-btn" onclick="editCurrentHubName()">✎ NAME</button>
                 </div>
-                <button class="hub-action-btn" style="color:#FF003C;" onclick="deleteCurrentHub()">🗑 刪除</button>
+                <button class="hub-action-btn" style="color:#FF003C;" onclick="deleteCurrentHub()">🗑 DEL</button>
             </div>
         </div>
 
@@ -137,7 +139,7 @@
             </select>
             <div class="slot-body"></div>
         </div>
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V23.0 HUB REORDER SYSTEM</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V23.2 LAYOUT RECALIBRATED</div>
     </div>
 
     <div class="right-column">
@@ -150,6 +152,7 @@
 
 <div id="physical-vault">
     <div class="orb-area" id="modA">
+        <!-- 🛡️ Header 佈局校準 -->
         <div class="orb-header"><span class="orb-id">A</span>
             <div class="time-ctrl-group" onclick="event.stopPropagation()">
                 <div class="time-ctrl">
@@ -185,6 +188,7 @@
     </div>
 
     <div class="orb-area" id="modB">
+        <!-- 🛡️ Header 佈局校準 -->
         <div class="orb-header"><span class="orb-id">B</span>
             <div class="time-ctrl-group" onclick="event.stopPropagation()">
                 <div class="time-ctrl">
@@ -219,7 +223,7 @@
     let selectedColor = palette[0], inputMode = 'date', showExact = { A: false, B: false };
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 全局拖曳系統 (Hub 與 List 通用)
+    // 🛡️ 全局拖曳
     let dragTarget = null, dragType = null;
 
     function initGlobalDrag() {
@@ -227,7 +231,6 @@
             if (e.target.classList.contains('detail-item')) { dragTarget = e.target; dragType = 'list'; e.target.classList.add('dragging'); }
             if (e.target.classList.contains('hub-tab')) { dragTarget = e.target; dragType = 'hub'; e.target.classList.add('dragging'); }
         });
-
         document.addEventListener('dragend', (e) => {
             if (!dragTarget) return;
             dragTarget.classList.remove('dragging');
@@ -235,7 +238,6 @@
             if (dragType === 'hub') saveHubOrder();
             dragTarget = null; dragType = null;
         });
-
         document.addEventListener('dragover', (e) => {
             if (!dragTarget) return; e.preventDefault();
             const container = dragTarget.parentElement;
@@ -256,8 +258,7 @@
     }
 
     function saveHubOrder() {
-        const tabs = [...document.querySelectorAll('.hub-tab')];
-        hubOrder = tabs.map(t => t.dataset.name);
+        hubOrder = [...document.querySelectorAll('.hub-tab')].map(t => t.dataset.name);
         localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder));
     }
 
@@ -272,7 +273,6 @@
     }
 
     window.switchHub = (n) => { 
-        // 瞬時清場
         const vault = document.getElementById('physical-vault');
         for(let i=1; i<=3; i++) {
             const body = document.querySelector(`#slot${i} .slot-body`);
@@ -328,10 +328,10 @@
         document.getElementById(`slot${slotNum}`).classList.add('active-slot');
         requestAnimationFrame(() => {
             refreshSelectors();
-            const valA = hubs[currentHubName].activeA || "";
-            const valB = hubs[currentHubName].activeB || "";
-            if (moduleId === 'modA' || currentModuleId === 'modA') { document.getElementById("selA").value = valA; updateRing("A", valA); }
-            if (moduleId === 'modB' || currentModuleId === 'modB') { document.getElementById("selB").value = valB; updateRing("B", valB); }
+            const vA = hubs[currentHubName].activeA || "";
+            const vB = hubs[currentHubName].activeB || "";
+            if (moduleId === 'modA' || currentModuleId === 'modA') { document.getElementById("selA").value = vA; updateRing("A", vA); }
+            if (moduleId === 'modB' || currentModuleId === 'modB') { document.getElementById("selB").value = vB; updateRing("B", vB); }
         });
     }
 
@@ -359,10 +359,9 @@
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
         t2.setAttribute("text-anchor", isRight ? "end" : "start"); t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
-        const percStr = `${((sector.amt / sector.total) * 100).toFixed(1)}%`;
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("text-anchor", isRight ? "end" : "start");
-        t3.textContent = percStr; svg.appendChild(t3);
+        t3.textContent = `${((sector.amt / sector.total) * 100).toFixed(1)}%`; svg.appendChild(t3);
     }
 
     window.updateRing = function(id, dim) {
@@ -401,7 +400,21 @@
     window.selectColor = (c, el) => { selectedColor = c; document.querySelectorAll('.color-opt').forEach(opt => { opt.classList.remove('active'); if(opt.style.backgroundColor === c || rgbToHex(opt.style.backgroundColor).toUpperCase() === c.toUpperCase()) opt.classList.add('active'); }); if(el) el.classList.add('active'); };
     function rgbToHex(rgb) { if (!rgb || rgb.startsWith("#")) return rgb; const vals = rgb.match(/\d+/g); return "#" + vals.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join(''); }
     window.setMode = (m) => { inputMode = m; document.getElementById("btnDate").classList.toggle("active", m === 'date'); document.getElementById("btnTag").classList.toggle("active", m === 'tag'); document.getElementById("dateArea").style.display = m === 'date' ? 'block' : 'none'; document.getElementById("tagArea").style.display = m === 'tag' ? 'block' : 'none'; };
-    window.saveData = function() { const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value; const n = document.getElementById("inputName").value || "UNNAMED"; const cost = safeEval(document.getElementById("inputAmt").value) || 0; const nowStr = document.getElementById("inputNow").value; const current = nowStr ? safeEval(nowStr) : cost; if (!dim) return; if (!hubs[currentHubName].data) hubs[currentHubName].data = {}; if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = []; const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" }; if (editMode.active && editMode.dim === dim && editMode.index > -1) hubs[currentHubName].data[dim][editMode.index] = entry; else hubs[currentHubName].data[dim].push(entry); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); exitEditMode(); refreshSelectors(); updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value); }
+    window.saveData = function() { 
+        const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value;
+        const n = document.getElementById("inputName").value || "UNNAMED";
+        const cost = safeEval(document.getElementById("inputAmt").value) || 0;
+        const nowStr = document.getElementById("inputNow").value;
+        const current = nowStr ? safeEval(nowStr) : cost;
+        if (!dim) return;
+        if (!hubs[currentHubName].data) hubs[currentHubName].data = {};
+        if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = [];
+        const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" };
+        if (editMode.active && editMode.dim === dim && editMode.index > -1) hubs[currentHubName].data[dim][editMode.index] = entry;
+        else hubs[currentHubName].data[dim].push(entry);
+        localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); exitEditMode(); refreshSelectors();
+        updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value);
+    }
     window.handleListClick = function(id, idx) { const sector = ringSectors[id][idx]; if (sector) activateEdit(id, sector); }
     function handleRingClick(e, id) { e.stopPropagation(); const rect = e.target.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2; let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) + 90; if (angle < 0) angle += 360; const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end); if (sector) activateEdit(id, sector); }
     function activateEdit(id, sector) { drawLead(id, sector); document.getElementById("modInput").classList.add("edit-active"); editMode = { active: true, dim: sector.dim, index: sector.idx }; const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-"); setMode(isD ? 'date' : 'tag'); if (isD) document.getElementById("inputDate").value = sector.dim; else document.getElementById("inputTag").value = sector.dim; document.getElementById("inputName").value = sector.name; document.getElementById("inputAmt").value = sector.cost; document.getElementById("inputNow").value = sector.hasNow ? sector.amt : ""; selectColor(sector.color); }
