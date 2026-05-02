@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windsor Hub v22.5</title>
+    <title>Windsor Hub v23.0</title>
     <style>
         body { font-family: 'Courier New', monospace; background: #080808; color: #FFF; padding: 0; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         * { box-sizing: border-box; }
-        
-        /* 🚀 性能預載 */
-        .donut-ring, .slot-container, .detail-item { will-change: transform; }
+        .donut-ring, .slot-container, .detail-item, .hub-tab { will-change: transform; }
 
         .layout-wrapper { display: flex; width: 100%; min-height: 100vh; padding: 20px 0; justify-content: center; }
         .left-filler { flex: 1; min-width: 10px; } 
@@ -28,31 +26,38 @@
             .side-note { position: static; }
         }
 
-        /* 🛡️ 插槽系統 */
+        /* 🛡️ 平行帳本標籤系統 (可拖曳) */
+        .hub-nav-area { width: 100%; margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .hub-tabs-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; -ms-overflow-style: none; }
+        .hub-tabs-container::-webkit-scrollbar { display: none; }
+        
+        .hub-tab { padding: 10px 18px; background: #111; border: 1px solid #333; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: grab; white-space: nowrap; transition: 0.2s; color: #888; display: flex; align-items: center; gap: 8px; }
+        .hub-tab.active { background: #000; border-color: #FFF; color: #FFF; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+        .hub-tab.dragging { opacity: 0.4; border: 1px dashed #FF8C00; }
+        .hub-tab:active { cursor: grabbing; }
+
+        .hub-ctrl-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 5px; }
+        .hub-action-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid #333; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+
+        /* 插槽系統 */
         .slot-container { width: 100%; margin-bottom: 35px; border: 2px dashed #222; border-radius: 35px; padding: 5px; position: relative; min-height: 140px; display: flex; flex-direction: column; align-items: center; }
         .slot-body { width: 100%; display: flex; justify-content: center; }
         .slot-container.active-slot { border-color: transparent; }
         .slot-label { position: absolute; top: -12px; left: 25px; background: #080808; color: #555; font-size: 10px; padding: 0 8px; font-weight: bold; }
         .slot-selector { position: absolute; top: -14px; right: 25px; background: #FF8C00; color: #000; border: none; border-radius: 6px; font-size: 11px; font-weight: 900; cursor: pointer; padding: 4px 12px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
-        header { text-align: center; margin: 20px 0 35px 0; width: 100%; }
+        header { text-align: center; margin: 20px 0 25px 0; width: 100%; }
         h2 { color: #FF8C00; margin: 0; font-size: 28px; letter-spacing: 6px; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 15px rgba(255,140,0,0.5); }
-        .hub-ctrl { background: #111; border: none; border-bottom: 2px solid #FFF; border-radius: 15px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 25px; }
-        .hub-select { background: #000; border: none; color: #FFF; font-size: 16px; font-weight: bold; outline: none; cursor: pointer; flex-grow: 1; }
         
         .orb-area { background: #000; border: 2px solid #FFF; border-radius: 30px; padding: 20px; text-align: center; overflow: hidden; width: 100%; max-width: 380px; }
         .section { background: #000; padding: 25px; border-radius: 25px; border: 2px solid #FFF; width: 100%; max-width: 380px; }
-        .orb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .orb-id { font-size: 24px; font-weight: 900; }
-
-        /* 🛡️ v21.8 經典維度控制組樣式回歸 */
+        
         .time-ctrl-group { display: flex; gap: 5px; }
         .time-ctrl { display: flex; background: #000; border: 1px solid #FFF; border-radius: 8px; overflow: hidden; width: 140px; }
         .time-select { flex-grow: 1; background: #000; border: none; color: #FFF; padding: 8px; font-size: 12px; outline: none; cursor: pointer; text-align: center; }
         .mini-btn { background: #1a1a1a; color: #FFF; border: 1px solid #FFF; border-radius: 8px; width: 32px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
         .del-x { background: #1a1a1a; color: #FFF; border: none; padding: 0 8px; font-size: 12px; cursor: pointer; border-left: 1px solid #FFF; }
         
-        /* 圓環與數字對中 */
         .chart-container { position: relative; width: 340px; height: 210px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .donut-ring { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #080808; -webkit-mask: radial-gradient(transparent 40%, black 41%); mask: radial-gradient(transparent 40%, black 41%); z-index: 5; cursor: pointer; }
         .leadline-layer { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
@@ -60,10 +65,8 @@
         .center-val { font-weight: bold; color: #39FF14; text-shadow: 0 0 10px rgba(57,255,20,0.8); font-size: 24px; transition: 0.2s; } 
         .center-val.exact-mode { font-size: 18px; color: #FFF; }
 
-        /* 🛡️ 列表拖曳與效能優化樣式 */
         .detail-list { margin-top: 10px; text-align: left; font-size: 12px; border-top: 1px solid #333; padding-top: 10px; max-height: 250px; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 25; }
         .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; border-bottom: 1px solid #111; color: #FFF; cursor: grab; background: #000; user-select: none; }
-        .detail-item:active { cursor: grabbing; }
         .detail-item.dragging { opacity: 0.4; border: 1px dashed #FF8C00; }
         .item-del-btn { background: transparent; color: #FF003C; border: 1px solid #333; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 10px; }
 
@@ -80,7 +83,6 @@
         .sync-gate { position: fixed; bottom: 0; left: 0; width: 100%; background: #080808; border-top: 1px solid #333; padding: 10px 0; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .gate-btn { background: #000; color: #FFF; border: 1px solid #FFF; padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: bold; min-width: 100px; cursor: pointer; }
         .footer { width: 100%; text-align: center; font-size: 10px; color: #444; margin-top: 50px; padding-bottom: 100px; }
-        .hub-btn { background: rgba(255,255,255,0.05); color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 5px 10px; margin-left: 5px; cursor: pointer; }
         #physical-vault { display: none; }
     </style>
 </head>
@@ -90,12 +92,16 @@
     <div class="left-filler"></div>
     <div class="main-container">
         <header><h2>WINDSOR HUB</h2></header>
-        <div class="hub-ctrl">
-            <select class="hub-select" id="hubSelector" onchange="switchHub(this.value)"></select>
-            <div style="display:flex">
-                <button class="hub-btn" onclick="editCurrentHubName()">✎</button>
-                <button class="hub-btn" onclick="addNewHub()">＋</button>
-                <button class="hub-btn" style="color:#FF003C; border-color: #FF003C;" onclick="deleteCurrentHub()">🗑</button>
+        
+        <!-- 🛡️ 平行帳本導覽區 -->
+        <div class="hub-nav-area">
+            <div class="hub-tabs-container" id="hubTabs"></div>
+            <div class="hub-ctrl-bar">
+                <div>
+                    <button class="hub-action-btn" onclick="addNewHub()">＋ 帳本</button>
+                    <button class="hub-action-btn" onclick="editCurrentHubName()">✎ 改名</button>
+                </div>
+                <button class="hub-action-btn" style="color:#FF003C;" onclick="deleteCurrentHub()">🗑 刪除</button>
             </div>
         </div>
 
@@ -131,7 +137,7 @@
             </select>
             <div class="slot-body"></div>
         </div>
-        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V22.5 PERFORMANCE PEAK</div>
+        <div class="footer">© 2026 WINDSOR SHIELD ANALYTICS<br>V23.0 HUB REORDER SYSTEM</div>
     </div>
 
     <div class="right-column">
@@ -207,60 +213,85 @@
 
 <script>
     let hubs = JSON.parse(localStorage.getItem("windsorMultiverse") || '{"Main Hub": {"data": {}, "note": "", "activeA": "", "activeB": ""}}');
-    let currentHubName = localStorage.getItem("windsorActiveHub") || "Main Hub";
+    let hubOrder = JSON.parse(localStorage.getItem("windsorHubOrder") || JSON.stringify(Object.keys(hubs)));
+    let currentHubName = localStorage.getItem("windsorActiveHub") || hubOrder[0];
     const palette = ["#F28695", "#FFC5BB", "#FFB6BD", "#EA7878", "#D06483", "#DCC1E0", "#D9C7EF", "#CBF1F7", "#AFD1F1", "#AF7351"];
     let selectedColor = palette[0], inputMode = 'date', showExact = { A: false, B: false };
     let ringSectors = { A: [], B: [] }, editMode = { active: false, dim: null, index: -1 };
 
-    // 🛡️ 效能優化：全局拖曳管理（單一監聽器）
-    let dragEl = null, dragIdSuffix = null;
+    // 🛡️ 全局拖曳系統 (Hub 與 List 通用)
+    let dragTarget = null, dragType = null;
 
-    function handleGlobalDrag() {
+    function initGlobalDrag() {
         document.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('detail-item')) {
-                dragEl = e.target;
-                dragIdSuffix = e.target.parentElement.id.slice(-1);
-                e.target.classList.add('dragging');
-            }
+            if (e.target.classList.contains('detail-item')) { dragTarget = e.target; dragType = 'list'; e.target.classList.add('dragging'); }
+            if (e.target.classList.contains('hub-tab')) { dragTarget = e.target; dragType = 'hub'; e.target.classList.add('dragging'); }
         });
 
         document.addEventListener('dragend', (e) => {
-            if (dragEl) {
-                dragEl.classList.remove('dragging');
-                saveNewOrder(dragIdSuffix);
-                dragEl = null; dragIdSuffix = null;
-            }
+            if (!dragTarget) return;
+            dragTarget.classList.remove('dragging');
+            if (dragType === 'list') saveNewOrder(dragTarget.parentElement.id.slice(-1));
+            if (dragType === 'hub') saveHubOrder();
+            dragTarget = null; dragType = null;
         });
 
         document.addEventListener('dragover', (e) => {
-            if (!dragEl) return;
-            e.preventDefault();
-            const list = document.getElementById("list" + dragIdSuffix);
-            const afterEl = getDragAfterElement(list, e.clientY);
-            if (afterEl == null) list.appendChild(dragEl);
-            else list.insertBefore(dragEl, afterEl);
+            if (!dragTarget) return; e.preventDefault();
+            const container = dragTarget.parentElement;
+            const afterEl = getDragAfterElement(container, e.clientX, e.clientY, dragType === 'hub');
+            if (afterEl == null) container.appendChild(dragTarget);
+            else container.insertBefore(dragTarget, afterEl);
         });
     }
 
-    function getDragAfterElement(container, y) {
-        const draggableEls = [...container.querySelectorAll('.detail-item:not(.dragging)')];
+    function getDragAfterElement(container, x, y, isHorizontal) {
+        const draggableEls = [...container.querySelectorAll(isHorizontal ? '.hub-tab:not(.dragging)' : '.detail-item:not(.dragging)')];
         return draggableEls.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
+            const offset = isHorizontal ? x - box.left - box.width / 2 : y - box.top - box.height / 2;
             if (offset < 0 && offset > closest.offset) return { offset, element: child };
             else return closest;
         }, { offset: -Infinity }).element;
     }
 
+    function saveHubOrder() {
+        const tabs = [...document.querySelectorAll('.hub-tab')];
+        hubOrder = tabs.map(t => t.dataset.name);
+        localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder));
+    }
+
     function saveNewOrder(idSuffix) {
         const dim = document.getElementById("sel" + idSuffix).value;
-        if (!dim || !hubs[currentHubName].data[dim]) return;
         const listEl = document.getElementById("list" + idSuffix);
         const newOrderNames = [...listEl.querySelectorAll('.detail-item')].map(el => el.dataset.name);
         const oldData = hubs[currentHubName].data[dim];
         hubs[currentHubName].data[dim] = newOrderNames.map(name => oldData.find(i => i.name === name));
         localStorage.setItem("windsorMultiverse", JSON.stringify(hubs));
         updateRing(idSuffix, dim);
+    }
+
+    window.switchHub = (n) => { 
+        // 瞬時清場
+        const vault = document.getElementById('physical-vault');
+        for(let i=1; i<=3; i++) {
+            const body = document.querySelector(`#slot${i} .slot-body`);
+            const sel = document.querySelector(`#slot${i} .slot-selector`);
+            if (body.firstChild) vault.appendChild(body.firstChild);
+            sel.value = 'none'; document.getElementById(`slot${i}`).classList.remove('active-slot');
+        }
+        currentHubName = n; localStorage.setItem("windsorActiveHub", n); 
+        renderHubTabs(); document.getElementById("noteArea").value = hubs[n].note || ""; clearLeads();
+    };
+
+    function renderHubTabs() {
+        const container = document.getElementById('hubTabs');
+        container.innerHTML = hubOrder.map(name => `
+            <div class="hub-tab ${name === currentHubName ? 'active' : ''}" 
+                 draggable="true" data-name="${name}" onclick="switchHub('${name}')">
+                ${name}
+            </div>
+        `).join('');
     }
 
     window.toggleExactMode = (id, e) => {
@@ -273,18 +304,15 @@
         const vault = document.getElementById('physical-vault');
         const currentSlotBody = document.querySelector(`#slot${slotNum} .slot-body`);
         const currentModuleId = currentSlotBody.firstChild ? currentSlotBody.firstChild.id : 'none';
-
         if (moduleId === 'none') {
             if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
             document.getElementById(`slot${slotNum}`).classList.remove('active-slot'); return;
         }
-
         let otherSlotNum = null;
         for (let i = 1; i <= 3; i++) {
             if (i === slotNum) continue;
             if (document.querySelector(`#slot${i} .slot-selector`).value === moduleId) { otherSlotNum = i; break; }
         }
-
         if (otherSlotNum) {
             const otherSlotBody = document.querySelector(`#slot${otherSlotNum} .slot-body`);
             const otherSelector = document.querySelector(`#slot${otherSlotNum} .slot-selector`);
@@ -296,18 +324,14 @@
                 otherSelector.value = 'none'; document.getElementById(`slot${otherSlotNum}`).classList.remove('active-slot');
             }
         } else if (currentSlotBody.firstChild) vault.appendChild(currentSlotBody.firstChild);
-
         currentSlotBody.appendChild(document.getElementById(moduleId));
         document.getElementById(`slot${slotNum}`).classList.add('active-slot');
-
         requestAnimationFrame(() => {
             refreshSelectors();
-            if (moduleId === 'modA' || currentModuleId === 'modA') {
-                const v = hubs[currentHubName].activeA || ""; document.getElementById("selA").value = v; updateRing("A", v);
-            }
-            if (moduleId === 'modB' || currentModuleId === 'modB') {
-                const v = hubs[currentHubName].activeB || ""; document.getElementById("selB").value = v; updateRing("B", v);
-            }
+            const valA = hubs[currentHubName].activeA || "";
+            const valB = hubs[currentHubName].activeB || "";
+            if (moduleId === 'modA' || currentModuleId === 'modA') { document.getElementById("selA").value = valA; updateRing("A", valA); }
+            if (moduleId === 'modB' || currentModuleId === 'modB') { document.getElementById("selB").value = valB; updateRing("B", valB); }
         });
     }
 
@@ -328,15 +352,17 @@
         svg.appendChild(line);
         const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t1.setAttribute("x", xLabel); t1.setAttribute("y", y2 - 4); t1.setAttribute("fill", "#FFF");
-        t1.setAttribute("font-size", "12px"); t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
+        t1.setAttribute("font-size", "12px"); t1.setAttribute("font-weight", "900"); 
+        t1.setAttribute("text-anchor", isRight ? "end" : "start"); t1.textContent = sector.name; svg.appendChild(t1);
         const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t2.setAttribute("x", xLabel); t2.setAttribute("y", y2 + 10); 
         t2.setAttribute("fill", sector.amt >= sector.cost ? "#39FF14" : "#FF003C");
         t2.setAttribute("font-size", "10px"); t2.setAttribute("font-weight", "bold"); 
         t2.setAttribute("text-anchor", isRight ? "end" : "start"); t2.textContent = `$ ${sector.amt.toLocaleString()}`; svg.appendChild(t2);
+        const percStr = `${((sector.amt / sector.total) * 100).toFixed(1)}%`;
         const t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
         t3.setAttribute("x", xLabel); t3.setAttribute("y", y2 + 22); t3.setAttribute("fill", "#888"); t3.setAttribute("font-size", "9px"); t3.setAttribute("text-anchor", isRight ? "end" : "start");
-        t3.textContent = `${((sector.amt / sector.total) * 100).toFixed(1)}%`; svg.appendChild(t3);
+        t3.textContent = percStr; svg.appendChild(t3);
     }
 
     window.updateRing = function(id, dim) {
@@ -368,59 +394,30 @@
     }
 
     window.registerActiveDim = (id, val) => { hubs[currentHubName]["active" + id] = val; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); };
-    window.switchHub = (n) => { 
-        const vault = document.getElementById('physical-vault');
-        for(let i=1; i<=3; i++) {
-            const body = document.querySelector(`#slot${i} .slot-body`);
-            const sel = document.querySelector(`#slot${i} .slot-selector`);
-            if (body.firstChild) vault.appendChild(body.firstChild);
-            sel.value = 'none'; document.getElementById(`slot${i}`).classList.remove('active-slot');
-        }
-        currentHubName = n; localStorage.setItem("windsorActiveHub", n); initHubUI(); 
-        document.getElementById("noteArea").value = hubs[n].note || ""; clearLeads();
-    };
-
-    function init() { 
-        initColorPicker(); initHubUI(); handleGlobalDrag(); // 🛡️ 啟動高效單一監聽器
-        document.getElementById("noteArea").value = hubs[currentHubName].note || ""; 
-    }
+    function init() { initGlobalDrag(); renderHubTabs(); initColorPicker(); document.getElementById("noteArea").value = hubs[currentHubName].note || ""; }
     function fmtWan(val) { let n = parseFloat(val) || 0; if (Math.abs(n) >= 10000) return (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + "萬"; return n.toLocaleString(); }
     window.safeEval = (s) => { try { return Function('"use strict"; return (' + s.replace(/[^-()\d/*+.]/g, '') + ')')(); } catch { return 0; } };
     function initColorPicker() { const g = document.getElementById("colorPicker"); g.innerHTML = palette.map(c => `<div class="color-opt" style="background:${c}" onclick="selectColor('${c}', this)"></div>`).join(''); g.children[0].classList.add("active"); }
     window.selectColor = (c, el) => { selectedColor = c; document.querySelectorAll('.color-opt').forEach(opt => { opt.classList.remove('active'); if(opt.style.backgroundColor === c || rgbToHex(opt.style.backgroundColor).toUpperCase() === c.toUpperCase()) opt.classList.add('active'); }); if(el) el.classList.add('active'); };
     function rgbToHex(rgb) { if (!rgb || rgb.startsWith("#")) return rgb; const vals = rgb.match(/\d+/g); return "#" + vals.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join(''); }
     window.setMode = (m) => { inputMode = m; document.getElementById("btnDate").classList.toggle("active", m === 'date'); document.getElementById("btnTag").classList.toggle("active", m === 'tag'); document.getElementById("dateArea").style.display = m === 'date' ? 'block' : 'none'; document.getElementById("tagArea").style.display = m === 'tag' ? 'block' : 'none'; };
-    window.saveData = function() { 
-        const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value;
-        const n = document.getElementById("inputName").value || "UNNAMED";
-        const cost = safeEval(document.getElementById("inputAmt").value) || 0;
-        const nowStr = document.getElementById("inputNow").value;
-        const current = nowStr ? safeEval(nowStr) : cost;
-        if (!dim) return;
-        if (!hubs[currentHubName].data) hubs[currentHubName].data = {};
-        if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = [];
-        const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" };
-        if (editMode.active && editMode.dim === dim && editMode.index > -1) hubs[currentHubName].data[dim][editMode.index] = entry;
-        else hubs[currentHubName].data[dim].push(entry);
-        localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); exitEditMode(); refreshSelectors();
-        updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value);
-    }
+    window.saveData = function() { const dim = inputMode === 'date' ? document.getElementById("inputDate").value : document.getElementById("inputTag").value; const n = document.getElementById("inputName").value || "UNNAMED"; const cost = safeEval(document.getElementById("inputAmt").value) || 0; const nowStr = document.getElementById("inputNow").value; const current = nowStr ? safeEval(nowStr) : cost; if (!dim) return; if (!hubs[currentHubName].data) hubs[currentHubName].data = {}; if (!hubs[currentHubName].data[dim]) hubs[currentHubName].data[dim] = []; const entry = { color: selectedColor, name: n, cost, amt: current, hasNow: nowStr !== "" }; if (editMode.active && editMode.dim === dim && editMode.index > -1) hubs[currentHubName].data[dim][editMode.index] = entry; else hubs[currentHubName].data[dim].push(entry); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); exitEditMode(); refreshSelectors(); updateRing("A", document.getElementById("selA").value); updateRing("B", document.getElementById("selB").value); }
     window.handleListClick = function(id, idx) { const sector = ringSectors[id][idx]; if (sector) activateEdit(id, sector); }
     function handleRingClick(e, id) { e.stopPropagation(); const rect = e.target.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2; let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI) + 90; if (angle < 0) angle += 360; const sector = ringSectors[id].find(s => angle >= s.start && angle < s.end); if (sector) activateEdit(id, sector); }
     function activateEdit(id, sector) { drawLead(id, sector); document.getElementById("modInput").classList.add("edit-active"); editMode = { active: true, dim: sector.dim, index: sector.idx }; const isD = !isNaN(Date.parse(sector.dim)) && sector.dim.includes("-"); setMode(isD ? 'date' : 'tag'); if (isD) document.getElementById("inputDate").value = sector.dim; else document.getElementById("inputTag").value = sector.dim; document.getElementById("inputName").value = sector.name; document.getElementById("inputAmt").value = sector.cost; document.getElementById("inputNow").value = sector.hasNow ? sector.amt : ""; selectColor(sector.color); }
     document.addEventListener('keydown', function(e) { if (e.key === 'Enter') { const activeEl = document.activeElement; if (activeEl.tagName === 'INPUT' && activeEl.closest('#modInput')) saveData(); } });
-    window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:"", activeA:"", activeB:""}; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); switchHub(n); } };
-    window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; switchHub(n); } };
-    window.deleteCurrentHub = () => { if (Object.keys(hubs).length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; switchHub(Object.keys(hubs)[0]); } };
+    window.addNewHub = () => { const n = prompt("名稱:"); if (n && !hubs[n]) { hubs[n] = {data:{}, note:"", activeA:"", activeB:""}; hubOrder.push(n); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder)); switchHub(n); } };
+    window.editCurrentHubName = () => { const n = prompt("改名:", currentHubName); if (n && !hubs[n]) { hubs[n] = hubs[currentHubName]; delete hubs[currentHubName]; const idx = hubOrder.indexOf(currentHubName); hubOrder[idx] = n; localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder)); switchHub(n); } };
+    window.deleteCurrentHub = () => { if (hubOrder.length > 1 && confirm("刪除？")) { delete hubs[currentHubName]; hubOrder = hubOrder.filter(h => h !== currentHubName); localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder)); switchHub(hubOrder[0]); } };
     window.removeItem = (d, i, rid) => { if (confirm("刪除？")) { hubs[currentHubName].data[d].splice(i, 1); if (!hubs[currentHubName].data[d].length) delete hubs[currentHubName].data[d]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); updateRing(rid, document.getElementById("sel"+rid).value); } };
     window.deleteDim = (id) => { const d = document.getElementById("sel"+id).value; if (d && confirm("刪除整天？")) { delete hubs[currentHubName].data[d]; refreshSelectors(); updateRing(id, ""); } };
     function refreshSelectors() { const dims = Object.keys(hubs[currentHubName].data || {}).sort(); ["selA", "selB"].forEach(id => { const el = document.getElementById(id); if (!el) return; const cur = el.value; el.innerHTML = "<option value=''>選取維度</option>" + dims.map(d => `<option value="${d}">${d}</option>`).join(''); el.value = hubs[currentHubName].data[cur] ? cur : ""; }); }
     window.renameDimension = (selectId) => { const oldName = document.getElementById(selectId).value; if (!oldName) return; const newName = prompt("輸入新名稱:", oldName); if (newName && newName !== oldName) { if (hubs[currentHubName].data[newName]) { alert("重複！"); return; } hubs[currentHubName].data[newName] = hubs[currentHubName].data[oldName]; delete hubs[currentHubName].data[oldName]; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); refreshSelectors(); document.getElementById(selectId).value = newName; updateRing(selectId.slice(-1), newName); } };
     function exitEditMode() { editMode = { active: false, dim: null, index: -1 }; document.getElementById("modInput").classList.remove("edit-active"); document.getElementById("inputName").value = ""; document.getElementById("inputAmt").value = ""; document.getElementById("inputNow").value = ""; }
     window.clearLeads = () => { document.getElementById("leadsA").innerHTML = ""; document.getElementById("leadsB").innerHTML = ""; exitEditMode(); };
-    function initHubUI() { document.getElementById("hubSelector").innerHTML = Object.keys(hubs).map(n => `<option value="${n}" ${n===currentHubName?'selected':''}>${n}</option>`).join(''); refreshSelectors(); }
-    window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify(hubs)))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("數據複製成功"); };
-    window.importData = () => { try { const c = prompt("代碼:"); if (c) { hubs = JSON.parse(decodeURIComponent(escape(atob(c)))); localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); location.reload(); } } catch { alert("無效代碼"); } };
+    function initHubUI() { renderHubTabs(); refreshSelectors(); }
+    window.exportData = () => { const s = btoa(unescape(encodeURIComponent(JSON.stringify({hubs, hubOrder})))); const t = document.createElement("textarea"); document.body.appendChild(t); t.value = s; t.select(); document.execCommand("copy"); document.body.removeChild(t); alert("數據複製成功"); };
+    window.importData = () => { try { const c = prompt("代碼:"); if (c) { const d = JSON.parse(decodeURIComponent(escape(atob(c)))); hubs = d.hubs; hubOrder = d.hubOrder; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); localStorage.setItem("windsorHubOrder", JSON.stringify(hubOrder)); location.reload(); } } catch { alert("無效代碼"); } };
     window.saveNote = () => { hubs[currentHubName].note = document.getElementById("noteArea").value; localStorage.setItem("windsorMultiverse", JSON.stringify(hubs)); };
     window.onload = init;
 </script>
